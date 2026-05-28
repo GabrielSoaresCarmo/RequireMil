@@ -5,17 +5,61 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="./popup.css">
 </head>
-    <body>
-        <img src="../assets/requiremil.png" alt="">
-        <form class="form-docs">
-            <select class="tipo-requerimento">
-                <option value="vazio">---Selecione---</option>
-                <option value="arrimo">Arrimo</option>
-                <option value="maior-30-anos">Maior de 30 anos</option>
-                <option value="isenção">Isenção</option>
-            </select>
-        </form>   
-        <button id="btn" class="">Botão</button>
+    <body class="max-w-xl w-128 h-128">
+        <img src="../assets/requiremil.png" alt=" " class="w-screen h-24">
+        <form id="form-docs" class="max-w-md mx-auto p-6 bg-slate-100 shadow rounded flex flex-col gap-6 items-center">
+            <label class="border-1">
+                <span class="font-bold">Requerimento:</span>
+                <select id="tipo-requerimento" class="border-1 rounded">
+                    <option value="vazio" class="text-center">Selecione</option>
+                    <option value="arrimo" class="text-center">Arrimo de família</option>
+                    <option value="maior-30" class="text-center">Maior de 30 anos</option>
+                    <option value="isenção-servico" class="text-center">Isenção do serviço militar </option>
+                </select>
+            </label>
+            <fieldset id="copias-docs" class="flex flex-col items-start w-full hidden" disabled>
+                <legend class="mx-auto p-4 shadow">Documentos copiados</legend>
+                <label class="">
+                    <input type="checkbox" name="documentos[]" value="certidao-nascimento" checked>
+                    <span>Certidão de nascimento</span>
+                </label>
+                <label class="">
+                    <input type="checkbox" name="documentos[]" value="documento-foto" checked>
+                    <span>Documento com foto</span>
+                </label>
+                <label class="">
+                    <input type="checkbox" name="documentos[]" value="comprovante-residencia" checked>
+                    <span>Comprovante de residência</span>
+                </label>
+                <fieldset class="border-1 flex flex-col hidden" id="tipo-arrimo" name="tipo-arrimo" disabled>
+                    <label class="" id="dependente">
+                        <span>Quem vai ser o(a) dependente?</span>
+                        <input type="radio" name="tipo-dependente" value="mae" disabled>
+                        <span>Mãe</span>
+                        <input type="radio" name="tipo-dependente" value="filho">
+                        <span>Filho(a)</span>
+                    </label>
+                    <label class="tipo-dependente hidden" name="docs-mae">
+                        <input type="radio" name="tipo-certidao" value="certidao-nascimento">
+                        <span>Certidão de nascimento</span>
+                        <input type="radio" name="tipo-certidao" value="certidao-casamento">
+                        <span>Certidão de casamento</span>
+                    </label>
+                    <label class="tipo-dependente hidden" name="docs-filho">
+                        <input type="checkbox" name="documentos[]" value="certidao-nascimento" checked>
+                        <span>Certidão de nascimento</span>
+                    </label>
+                    <label class="" id="carteira">
+                        <span>O alistado está trabalhando de carteira assinada?</span>
+                        <input type="radio" name="carteira-trabalho" id="">
+                        <span>Sim</span>
+                        <input type="radio" name="carteira-trabalho" id="">
+                        <span>Não</span>
+                    </label>
+                </fieldset>
+            </fieldset>
+            <button id="btn" class="bg-blue-700 w-12 hover:bg-blue-900 rounded-lg font-bold py-1 transition text-white cursor-pointer">Botão</button>
+        </form>
         <script src="popup.js" defer></script>
     </body>
 </html>
