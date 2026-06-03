@@ -22,65 +22,75 @@
             <fieldset id="copias-docs" class="flex flex-col items-start w-full hidden" disabled>
                 <legend class="mx-auto p-4 shadow">Documentos copiados que serão anexados ao requerimento</legend>
                 <label>
-                    <input class="certidao-alistado" type="checkbox" name="tipo-certidao-alistado" value="certidao-de-nascimento" checked>
+                    <input class="certidao-alistado" type="checkbox" name="tipo-certidao-alistado" value="certidao-nascimento" checked disabled>
                     <span>Certidão de nascimento</span>
                 </label>
                 <label class="hidden">
-                    <input class="certidao-alistado" type="radio" name="tipo-certidao-alistado" value="certidao-de-casamento" checked>
+                    <input class="certidao-alistado" type="radio" name="tipo-certidao-alistado" value="certidao-casamento" disabled>
                     <span>Certidão de casamento</span>
                 </label>
                 <label class="">
-                    <input type="checkbox" name="documentos[]" value="documento-com-foto" checked>
+                    <input type="checkbox" name="documentos[]" value="documento-foto" checked disabled>
                     <span>Documento com foto</span>
                 </label>
                 <label class="">
-                    <input type="checkbox" name="documentos[]" value="comprovante-de-residencia" checked>
+                    <input type="checkbox" name="documentos[]" value="comprovante-residencia" checked disabled>
                     <span>Comprovante de residência</span>
                 </label>
                 <fieldset id="tipo-arrimo" class="border-1 flex flex-col hidden" name="tipo-arrimo" disabled>
                     <div id="carteira">
                         <p>O alistado está trabalhando de carteira assinada?</p>
                         <label>
-                            <input type="radio" name="carteira-trabalho" id="">
+                            <input type="radio" name="carteira-trabalho" value="carteira-trabalho" disabled>
                             <span>Sim</span>
                         </label>
                         <label>
-                            <input type="radio" name="carteira-trabalho" id="">
+                            <input type="radio" name="carteira-trabalho" value="declaracao-autonomo" disabled>
                             <span>Não</span>
                         </label>
                     </div>
                     <div id="dependente">
                         <p>Quem vai ser o(a) dependente?</p>
                         <label>
-                            <input type="radio" name="tipo-dependente" value="mae">
+                            <input type="radio" name="tipo-dependente" value="mae" disabled>
                             <span>Mãe</span>
                         </label>
                         <label>
-                            <input type="radio" name="tipo-dependente" value="filho">
+                            <input type="radio" name="tipo-dependente" value="filho" disabled>
                             <span>Filho(a)</span>
                         </label>
                     </div>
-                    <div class="tipo-dependente hidden" name="docs-mae" disabled>
+                    <div class="tipo-dependente hidden" name="docs-mae">
+                        <p>Escolha qual documento da mãe será usado.</p>
                         <label>
-                            <input type="radio" name="tipo-certidao-mae" value="certidao-de-nascimento-da-mae">
+                            <input type="radio" name="tipo-certidao-mae" value="certidao-nascimento-mae" disabled>
                             <span>Certidão de nascimento</span>
                         </label>
                         <label>
-                            <input type="radio" name="tipo-certidao-mae" value="certidao-de-casamento-da-mae">
+                            <input type="radio" name="tipo-certidao-mae" value="certidao-casamento-mae" disabled>
                             <span>Certidão de casamento</span>
+                        </label><br>
+                        <label>
+                            <input type="checkbox" name="documentos[]" value="documento-foto-mae" disabled>
+                            <span>Documento com foto</span>
                         </label>
                     </div>
                     <div class="tipo-dependente hidden" name="docs-filho" disabled>
+                        <p>Escolha os documentos do(a) filho(a) </p>
                         <label>
-                            <input type="checkbox" name="documentos[]" value="certidao-nascimento-filho" checked>
+                            <input type="checkbox" name="documentos[]" value="certidao-nascimento-filho" disabled>
                             <span>Certidão de nascimento</span>
+                        </label>
+                        <label>
+                            <input type="checkbox" name="documentos[]" value="documento-foto-filho" disabled>
+                            <span>Documento com foto</span>
                         </label>
                     </div>
                 </fieldset>
                 <fieldset id="tipo-isenção-servico" class="border-1 hidden" disabled>
                     <div>
                         <label>
-                            <input type="checkbox" name="documentos[]" value="atestado-medico" checked>
+                            <input type="checkbox" name="documentos[]" value="atestado-medico" checked disabled>
                             <span>Atestado médico</span>
                         </label>
                     </div>
@@ -88,13 +98,13 @@
                 <fieldset id="tipo-isenção-txmt" class="border-1 hidden" disabled>
                     <div>
                         <label>
-                            <input type="checkbox" name="documentos[]" value="ficha-socioeconomica" checked>
+                            <input type="checkbox" name="documentos[]" value="ficha-socioeconomica" checked disabled>
                             <span>Ficha socioeconômica</span>
                         </label>
                     </div>
                     <div>
                         <label>
-                            <input type="checkbox" name="documentos[]" value="gru-do-art.-225-do-rlsm" checked>
+                            <input type="checkbox" name="documentos[]" value="gru-art-225-rlsm" checked disabled>
                             <span>GRU do Art. 225 do RLSM</span>
                         </label>
                     </div>
@@ -102,41 +112,41 @@
                 <fieldset id="tipo-retificacao-dados-cadastrais" class="border-1 hidden" disabled>
                     <div class="tipo-documento-retificacao">
                         <label>
-                            <input type="radio" name="tipo-documento-retificacao">
+                            <input type="radio" name="tipo-documento-retificacao" value="certificado-dispensa-incorporacao" disabled>
                             <span>Certificado de Dispensa</span>
                         </label>
                         <label>
-                            <input type="radio" name="tipo-documento-retificacao">
+                            <input type="radio" name="tipo-documento-retificacao" value="certificado-reservista" disabled>
                             <span>Certificado de Reservista de 1ª ou 2ª Categoria</span>
                         </label>
                         <label>
-                            <input type="radio" name="tipo-documento-retificacao">
+                            <input type="radio" name="tipo-documento-retificacao" value="atestado-desobrigacao" disabled>
                             <span>Atestado de Desobrigação</span>
                         </label>
                     </div>
                     <div id="nome">
                         <span>Quem teve o nome mudado?</span>
                         <label>
-                            <input type="radio" name="pessoa-mudou-nome" value="alistado">
+                            <input type="radio" name="pessoa-mudou-nome" value="alistado" disabled>
                             <span>Alistado</span>
                         </label>
                         <label>
-                            <input type="radio" name="pessoa-mudou-nome" value="mae">
+                            <input type="radio" name="pessoa-mudou-nome" value="mae" disabled>
                             <span>Mãe</span>
                         </label>
                         <label>
-                            <input type="radio" name="pessoa-mudou-nome" value="pai">
+                            <input type="radio" name="pessoa-mudou-nome" value="pai" disabled>
                             <span>Pai</span>
                         </label>
                     </div>
                     <div class="nome-retificado hidden" disabled>
-                        <label>
+                        <label class="flex items-center gap-2 w-full">
                             <span>
                                 Digite o novo nome 
                                 <span id="texto-nome"></span>
                                 :
                             </span>
-                            <input type="text" class="border-1" id="texto-nome-retificado">
+                            <input type="text" class="border-1 flex-1" id="texto-nome-retificado" disabled>
                         </label>
                     </div>
                 </fieldset>
