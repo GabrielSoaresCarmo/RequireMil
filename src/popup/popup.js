@@ -28,21 +28,44 @@ window.addEventListener('load', () => {
     if (button) {
         
         tipoRequerimento.addEventListener("change", (event) => {
-            atualizarTipoRequerimento(event.target.value);
-            if(event.target.value != "arrimo"){
-                tipoCertidao[0].type = "radio";
-                tipoCertidao[1].closest("label").classList.remove("hidden");
-                //tipoCertidao[2].classList.remove("hidden");
+            fieldsetPai.querySelectorAll("fieldset, div.tipo-dependente").forEach(el => el.classList.add("hidden"));
+            fieldsetPai.querySelectorAll("fieldset").forEach(el => el.disabled = true);
+            const tipoFieldset = fieldsetPai.querySelector(`#tipo-${event.target.value}`);
+            if(event.target.value != "vazio"){
+                fieldsetPai.classList.remove("hidden");
+                fieldsetPai.disabled = false;
+                fieldsetPai.querySelectorAll("input").forEach(input => {
+                    if(input.closest("fieldset") === fieldsetPai){
+                        input.disabled = false;
+                    }
+                });
+                if(tipoFieldset){
+                    tipoFieldset.classList.remove("hidden");
+                    tipoFieldset.disabled = false;
+                    tipoFieldset.querySelectorAll("input").forEach(el => el.disabled = false);
+                }
             }
             else{
-                tipoCertidao[0].type = "checkbox";
-                tipoCertidao[0].checked = true;
+                document.querySelector("#form-docs").reset();
+                fieldsetPai.classList.add("hidden");
+                fieldsetPai.querySelectorAll("input").forEach(el => el.disabled = true);
+            }
+
+            if(event.target.value != "arrimo"){
+                tipoCertidao[1].closest("label").classList.remove("hidden");
+            }
+            else{
                 tipoCertidao[1].closest("label").classList.add("hidden");
             }
+            document.querySelector("#form-docs").reset();
         });
         
+        tipoCertidao[1].addEventListener("change", () => {tipoCertidao[0].checked = false});
+        tipoCertidao[0].addEventListener("change", () => {tipoCertidao[1].checked = false});
+
         dependente.addEventListener("change", (event) => {
             document.querySelectorAll(".tipo-dependente").forEach(el => el.classList.add("hidden"));
+            document.querySelectorAll(".tipo-dependente input").forEach(el => el.checked = false);
             const tipoDependente = document.querySelector(`.tipo-dependente[name="docs-${event.target.value}"]`);
             if(tipoDependente){
                 tipoDependente.classList.remove("hidden");
@@ -65,25 +88,9 @@ window.addEventListener('load', () => {
 
         button.addEventListener("click", async (event) => {
             event.preventDefault();
+            const form = document.querySelector("#form-docs");
             const opcao = tipoRequerimento.value;
             const valoresMarcados = document.querySelectorAll(`input[name="documentos[]"]:not([disabled]):checked, [name="tipo-certidao-alistado"]:not([disabled]):checked, [name="carteira-trabalho"]:not([disabled]):checked, [name="tipo-dependente"]:not([disabled]):checked, [name="tipo-certidao-mae"]:not([disabled]):checked, [name="tipo-documento-retificacao"]:not([disabled]):checked`);
-            //const array = Array.from(valoresMarcados).filter(input => !input.disabled && input.offsetParent !== null).map(input => input.value);
-            /*const array = Array.from(valoresMarcados).map(input => input.value.split("-").map((palavra, index) => {
-                const conectivos = ["da ", "de ", "do "];
-                const sinal = ["cao", "dao", "mae"]
-                if(palavra.includes("cao") || palavra.includes("dao") || palavra.includes("mae")){
-                    palavra = palavra.replace("a", "ã");
-
-                }
-                if(conectivos.includes(palavra.toLowerCase())){
-                    return palavra.toLowerCase();
-                }
-                palavra = palavra.charAt(0).toUpperCase() + palavra.slice(1).toLowerCase();
-                if(index == 0){
-                    palavra = "cópia " + conectivos[0] + palavra;
-                }
-                return palavra;
-            }).join(" "));*/
             const arrayDocs = Array.from(valoresMarcados).map(doc => dicionarioDocs[doc.value]);
             
             switch(opcao){
@@ -107,8 +114,7 @@ window.addEventListener('load', () => {
                     break;
             }
             alert(arrayDocs);
-            atualizarTipoRequerimento("vazio");
-            tipoRequerimento.value = "vazio";
+            window.location.reload();
         });
 
         function atualizarTipoRequerimento(valor){
@@ -132,11 +138,7 @@ window.addEventListener('load', () => {
             if(tipoFieldset){
                 tipoFieldset.classList.remove("hidden");
                 tipoFieldset.disabled = false;
-                const tipoDependente = document.querySelector(`.tipo-dependente[name="docs-${dependente.value}"]`);
-                if(tipoDependente){
-                    tipoDependente.classList.remove("hidden");
-                    tipoDependente.querySelectorAll("input").forEach(el => el.disabled = false);
-                }
+                tipoFieldset.querySelectorAll("input").forEach(el => el.disabled = false);
             }
         }
     }

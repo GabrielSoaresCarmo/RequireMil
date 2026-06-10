@@ -26,7 +26,7 @@
                     <span>Certidão de nascimento</span>
                 </label>
                 <label class="hidden">
-                    <input class="certidao-alistado" type="radio" name="tipo-certidao-alistado" value="certidao-casamento" disabled>
+                    <input class="certidao-alistado" type="checkbox" name="tipo-certidao-alistado" value="certidao-casamento" disabled>
                     <span>Certidão de casamento</span>
                 </label>
                 <label class="">
@@ -60,7 +60,7 @@
                             <span>Filho(a)</span>
                         </label>
                     </div>
-                    <div class="tipo-dependente hidden" name="docs-mae">
+                    <div class="tipo-dependente hidden" name="docs-mae" disabled>
                         <p>Escolha qual documento da mãe será usado.</p>
                         <label>
                             <input type="radio" name="tipo-certidao-mae" value="certidao-nascimento-mae" disabled>
@@ -146,7 +146,7 @@
                                 <span id="texto-nome"></span>
                                 :
                             </span>
-                            <input type="text" class="border-1 flex-1" id="texto-nome-retificado" disabled>
+                            <input type="text" class="border-1 flex-1 uppercase" id="texto-nome-retificado" disabled>
                         </label>
                     </div>
                 </fieldset>
