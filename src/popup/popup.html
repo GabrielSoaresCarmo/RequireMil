@@ -13,8 +13,8 @@
                 <select id="tipo-requerimento" class="border-1 rounded">
                     <option value="vazio" class="text-center">Selecione</option>
                     <option value="arrimo" class="text-center">Arrimo de família</option>
-                    <option value="isenção-servico" class="text-center">Isenção do serviço militar </option>
-                    <option value="isenção-txmt" class="text-center">Isenção de taxas e multas</option>
+                    <option value="isencao-servico" class="text-center">Isenção do serviço militar </option>
+                    <option value="isencao-txmt" class="text-center">Isenção de taxas e multas</option>
                     <option value="maior-30" class="text-center">Maior de 30 anos</option>
                     <option value="retificacao-dados-cadastrais" class="text-center">Retificação de dados cadastrais</option>
                 </select>
@@ -87,7 +87,7 @@
                         </label>
                     </div>
                 </fieldset>
-                <fieldset id="tipo-isenção-servico" class="border-1 hidden" disabled>
+                <fieldset id="tipo-isencao-servico" class="border-1 hidden" disabled>
                     <div>
                         <label>
                             <input type="checkbox" name="documentos[]" value="atestado-medico" checked disabled>
@@ -95,7 +95,7 @@
                         </label>
                     </div>
                 </fieldset>
-                <fieldset id="tipo-isenção-txmt" class="border-1 hidden" disabled>
+                <fieldset id="tipo-isencao-txmt" class="border-1 hidden" disabled>
                     <div>
                         <label>
                             <input type="checkbox" name="documentos[]" value="ficha-socioeconomica" checked disabled>
@@ -107,6 +107,111 @@
                             <input type="checkbox" name="documentos[]" value="gru-art-225-rlsm" checked disabled>
                             <span>GRU do Art. 225 do RLSM</span>
                         </label>
+                    </div>
+                    <div id="dados-ficha-socioecnômica" class="flex flex-col">
+                        <p class="mx-auto p-4 shadow">Dados para preencher a ficha socioecnômica</p>
+                        <label>
+                            <span>Número de dependentes: </span>
+                            <input type="number" id="input-numero-dependentes" class="border-1 rounded" value="0">
+                        </label>
+                        <label>
+                            <span>Ocupação: </span>
+                            <input type="text" id="input-ocupacao" class="border-1 rounded uppercase">
+                        </label>
+                        <label>
+                            <span>Sálario: </span>
+                            <input type="text" id="input-salario" class="border-1 rounded" placeholder="R$ 00,00">
+                        </label>
+                        <div id="tipo-casa">
+                            <p>A casa é própria ou alugada?</p>
+                            <label>
+                                <input type="radio" class="radio-tipo-casa" name="casa-aluguel" value="propria">
+                                <span>Própria</span>
+                            </label>
+                            <label>
+                                <input type="radio" class="radio-tipo-casa" name="casa-aluguel" value="alugada">
+                                <span>Alugada</span>
+                            </label>
+                            <label class="label-valor-aluguel hidden">
+                                <span>| Valor do aluguel: </span>
+                                <input type="text" class="input-valor-aluguel border-1 rounded" placeholder="R$ 00,00" disabled>
+                            </label>
+                        </div>
+
+                        <div id="lista-artigos-usados">
+                            <p class="mx-auto text-center">Lista dos artigos isentados</p>
+                            <div class="grid grid-cols-5 gap-2 p-2">
+                                <label>
+                                    <input type="checkbox" name="artigos[]" value="47">
+                                    <span>Art. 47</span>
+                                </label>
+                                <label>
+                                    <input type="checkbox" name="artigos[]" value="52">
+                                    <span>Art. 52</span>
+                                </label>
+                                <label>
+                                    <input type="checkbox" name="artigos[]" value="60">
+                                    <span>Art. 60</span>
+                                </label>
+                                <label>
+                                    <input type="checkbox" name="artigos[]" value="225">
+                                    <span>Art. 225</span>
+                                </label>
+                                <label>
+                                    <input type="checkbox" name="artigos[]" value="75">
+                                    <span>Art. 75</span>
+                                </label>
+                                <label>
+                                    <input type="checkbox" name="artigos[]" value="103">
+                                    <span>Art. 103</span>
+                                </label>
+                                <label>
+                                    <input type="checkbox" name="artigos[]" value="2/24">
+                                    <span>Art. 2/24</span>
+                                </label>
+                                <label>
+                                    <input type="checkbox" name="artigos[]" value="107/2">
+                                    <span>Art. 107/2</span>
+                                </label>
+                                <label>
+                                    <input type="checkbox" name="artigos[]" value="176/1">
+                                    <span>Art. 176/1</span>
+                                </label>
+                                <label>
+                                    <input type="checkbox" name="artigos[]" value="176/2">
+                                    <span>Art. 176/2</span>
+                                </label>
+                                <label>
+                                    <input type="checkbox" name="artigos[]" value="176/3">
+                                    <span>Art. 176/3</span>
+                                </label>
+                                <label>
+                                    <input type="checkbox" name="artigos[]" value="177/1">
+                                    <span>Art. 177/1</span>
+                                </label>
+                                <label>
+                                    <input type="checkbox" name="artigos[]" value="177/3">
+                                    <span>Art. 177/3</span>
+                                </label>
+                                <label>
+                                    <input type="checkbox" name="artigos[]" value="177/4">
+                                    <span>Art. 177/4</span>
+                                </label>
+                                <label>
+                                    <input type="checkbox" name="artigos[]" value="178/1">
+                                    <span>Art. 178/1</span>
+                                </label>
+                                <label>
+                                    <input type="checkbox" name="artigos[]" value="178/2">
+                                    <span>Art. 178/2</span>
+                                </label>
+                                <label>
+                                    <input type="checkbox" name="artigos[]" value="179/2">
+                                    <span>Art. 179/2</span>
+                                </label>
+                                <span id="valor-total">R$ 1234,56</span>
+                            </div>
+                        </div>
                     </div>
                 </fieldset>
                 <fieldset id="tipo-retificacao-dados-cadastrais" class="border-1 hidden" disabled>
@@ -146,13 +251,14 @@
                                 <span id="texto-nome"></span>
                                 :
                             </span>
-                            <input type="text" class="border-1 flex-1 uppercase" id="texto-nome-retificado" disabled>
+                            <input type="text" class="border-1 rounded flex-1 uppercase" id="texto-nome-retificado" disabled>
                         </label>
                     </div>
                 </fieldset>
             </fieldset>
             <button id="btn" class="bg-blue-700 w-12 hover:bg-blue-900 rounded-lg font-bold py-1 transition text-white cursor-pointer">Botão</button>
         </form>
+        <script src="../libs/extenso.js"></script>
         <script src="popup.js" defer></script>
     </body>
 </html>

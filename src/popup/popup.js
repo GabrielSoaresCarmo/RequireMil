@@ -1,10 +1,34 @@
-window.addEventListener('load', () => {
+// 🟢 Importando o arquivo local do node_modules. Sem links externos!
+// extenso.js é carregado via <script> global no popup.html (não é um módulo ES real)
+// A função fica disponível como window.extenso
+//window.addEventListener('load', () => {
+    const valorTaxaMinima = 6.56;
+    const todosArtigos = {
+        "47": valorTaxaMinima * 5,
+        "52": valorTaxaMinima * 5,
+        "60": valorTaxaMinima * 15,
+        "75": valorTaxaMinima * 3,
+        "103": valorTaxaMinima * 1,
+        "225": valorTaxaMinima * 0,
+        "2/24": valorTaxaMinima * 1,
+        "107/2": valorTaxaMinima * 1,
+        "176/1": valorTaxaMinima * 1,
+        "176/2": valorTaxaMinima * 1,
+        "176/3": valorTaxaMinima * 1,
+        "177/1": valorTaxaMinima * 3,
+        "177/3": valorTaxaMinima * 3,
+        "177/4": valorTaxaMinima * 3,
+        "178/1": valorTaxaMinima * 5,
+        "178/2": valorTaxaMinima * 5,
+        "179/2": valorTaxaMinima * 10,
+    }
     const button = document.getElementById("btn");
     const tipoRequerimento = document.querySelector("#tipo-requerimento");
     const fieldsetPai = document.querySelector("#copias-docs");
     const dependente = document.querySelector("#dependente");
     const tipoNome = document.querySelector("#nome");
     const tipoCertidao = document.querySelectorAll(".certidao-alistado");
+    const tipoCasa = document.querySelector("#tipo-casa");
     const dicionarioDocs = {
         "certidao-nascimento" : "Cópia da certidão de nascimento",
         "certidao-casamento" : "Cópia da certidão de casamento",
@@ -24,8 +48,13 @@ window.addEventListener('load', () => {
         "certificado-reservista" : "Certificado de Reservista",
         "atestado-desobrigacao" : "Atestado de Desobrigação",
     };
+    const listaArquivos = {
+        "arrimo" : ["../docs/REQUERIMENTOS/ARRIMO/arrimo.txt", "../docs/REQUERIMENTOS/ARRIMO/declaracao-arrimo.txt", "../docs/REQUERIMENTOS/ARRIMO/declaracao-autonomo.txt"],
+        "isencao-txmt" : ["../docs/REQUERIMENTOS/ARRIMO/isencao-txmt.txt", "../docs/REQUERIMENTOS/ARRIMO/ficha-socioeconomica.txt", "../docs/REQUERIMENTOS/ARRIMO/modelo-cidadao.txt"],
+        "retificacao-dados-cadastrais" : "../docs/REQUERIMENTOS/ARRIMO/retificacao-dados-cadastrais.txt",
+    };
 
-    if (button) {
+    //if (button) {
         
         tipoRequerimento.addEventListener("change", (event) => {
             fieldsetPai.querySelectorAll("fieldset, div.tipo-dependente").forEach(el => el.classList.add("hidden"));
@@ -73,6 +102,20 @@ window.addEventListener('load', () => {
             }
         });
 
+        tipoCasa.addEventListener("change", (event) => {
+            const labelValorAluguel = document.querySelector(".label-valor-aluguel");
+            const inputValorAluguel = document.querySelector(".input-valor-aluguel");
+            if(event.target.value == "alugada"){
+                labelValorAluguel.classList.remove("hidden");
+                inputValorAluguel.disabled = false;
+            }
+            else if(event.target.value == "propria"){
+                labelValorAluguel.classList.add("hidden");
+                inputValorAluguel.disabled = true;
+                inputValorAluguel.value = null;
+            }
+        });
+
         tipoNome.addEventListener("change", (event) => {
             document.querySelector(".nome-retificado").classList.remove("hidden");
             document.querySelector(".nome-retificado").disabled = false;
@@ -93,12 +136,44 @@ window.addEventListener('load', () => {
             const valoresMarcados = document.querySelectorAll(`input[name="documentos[]"]:not([disabled]):checked, 
                                                                input[name="tipo-certidao-alistado"]:not([disabled]):checked, 
                                                                input[name="carteira-trabalho"]:not([disabled]):checked, 
-                                                               input[name="tipo-certidao-mae"]:not([disabled]):checked, 
-                                                               input[name="tipo-documento-retificacao"]:not([disabled]):checked`);
+                                                               input[name="tipo-certidao-mae"]:not([disabled]):checked`);
+                                                               /*input[name="tipo-documento-retificacao"]:not([disabled]):checked*/
             const arrayDocs = Array.from(valoresMarcados).map(doc => dicionarioDocs[doc.value]);
             let comecoFrase = arrayDocs.slice(0, -1).join(", ");
             let ultimoItem = arrayDocs.at(-1)
             let listaDocs = `${comecoFrase} e ${ultimoItem}`;
+            const numeroDependentes = document.querySelector("#input-numero-dependentes").value;
+            const ocupacao = document.querySelector("#input-ocupacao").value;
+            const salario = document.querySelector("#input-salario").value;
+            const radioTipoCasa = document.querySelector(".radio-tipo-casa:checked")?.value;
+            const inputValorAluguel = document.querySelector(".input-valor-aluguel").value;
+            let casa;
+            if(radioTipoCasa == "alugada"){ 
+                casa = `Casa: ()Própria (X)Alugada - Aluguel: ${inputValorAluguel}`;
+            }
+            else{
+                casa = "Casa: (X)Própria ()Alugada";
+            }
+            const artigos = document.querySelectorAll(`input[name="artigos[]"]:checked`);
+            const arrayArtigos = Array.from(artigos).map(art => art.value);
+            let listaArtigos;
+            if(arrayArtigos.length == 1){
+                listaArtigos = "Art. " + arrayArtigos.join(", ");
+            }
+            else{
+                let comecoArtigo = arrayArtigos.slice(0, -1).join(", ");
+                let ultimoArtigo = arrayArtigos.at(-1);
+                listaArtigos = `Arts. ${comecoArtigo} e ${ultimoArtigo}`;
+            }
+            let valorTotal = 0;
+            arrayArtigos.forEach(element => {
+                valorTotal = valorTotal + todosArtigos[element];
+            });
+            //valorTotal = String(valorTotal);
+            valorTotal = valorTotal.toFixed(2);
+            let valorExtenso = "";
+            valorExtenso = extenso(valorTotal.replace(".", ","), {mode: "currency"});
+            alert("o valor total e: " + valorTotal);
             
             switch(opcao){
                 case "vazio":
@@ -107,10 +182,10 @@ window.addEventListener('load', () => {
                 case "arrimo":
                     alert("Arrimo de Família");
                     break;
-                case "isenção-servico":
+                case "isencao-servico":
                     alert("Isenção do Serviço Militar");
                     break;
-                case "isenção-txmt":
+                case "isencao-txmt":
                     alert("Isenção de Taxas e Multas");
                     break;
                 case "maior-30":
@@ -120,157 +195,169 @@ window.addEventListener('load', () => {
                     alert("Retificação de dados cadastrais");
                     break;
             }
-            alert(arrayDocs);
+
+            lerArquivo(listaDocs, numeroDependentes, ocupacao, salario, casa, listaArtigos, valorTotal, valorExtenso);
+            alert("array dos docs: " + arrayDocs);
             //window.location.reload();
-        async function lerArquivo(textoDocs){
-            try {
-                let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-                    // 2. Executa um script na página para pegar o texto
-                chrome.scripting.executeScript({
-                    target: { tabId: tab.id },
-                    args: [textoDocs],
-                    func: async (docs) => {
-                        const data = new Date();
-                        const dia = String(data.getDate()).padStart(2, "0");
-                        const mes= [
-                            "janeiro",
-                            "fevereiro",
-                            "março",
-                            "abril",
-                            "maio",
-                            "junho",
-                            "julho",
-                            "agosto",
-                            "setembro",
-                            "outubro",
-                            "novembro",
-                            "dezembro"
-                        ];
-                        const ano = data.getFullYear();
-                        const dataAtual = dia + " de " + mes[data.getMonth()] + " de " + ano;
-                        const dataNascimento = document.querySelector(".data-table").rows[2].cells[1].innerText.split("/");
+            async function lerArquivo(listaDocs, numeroDependentes, ocupacao, salario, casa, listaArtigos, valorTotal, valorExtenso){
+                try {
+                    let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+                        // 2. Executa um script na página para pegar o texto
+                    chrome.scripting.executeScript({
+                        target: { tabId: tab.id },
+                        args: [listaDocs, numeroDependentes, ocupacao, salario, casa, listaArtigos, valorTotal, valorExtenso],
+                        func: async (listaDocs, numeroDependentes, ocupacao, salario, casa, listaArtigos, valorTotal, valorExtenso) => {
+                            const data = new Date();
+                            const dia = String(data.getDate()).padStart(2, "0");
+                            const mes= [
+                                "janeiro",
+                                "fevereiro",
+                                "março",
+                                "abril",
+                                "maio",
+                                "junho",
+                                "julho",
+                                "agosto",
+                                "setembro",
+                                "outubro",
+                                "novembro",
+                                "dezembro"
+                            ];
+                            const ano = data.getFullYear();
+                            const dataAtual = dia + " de " + mes[data.getMonth()] + " de " + ano;
+                            const dataNascimento = document.querySelector(".data-table")?.rows[2]?.cells[1]?.innerText?.split("/") || ["01", "01", "2000"];
 
-                        const estados = {
-                            "AC" : "Acre",
-                            "AL" : "Alagoas",
-                            "AP" : "Amapá",
-                            "AM" : "Amazonas",
-                            "BA" : "Bahia",
-                            "CE" : "Ceará",
-                            "DF" : "Distrito Federal",
-                            "ES" : "Espírito Santo",
-                            "GO" : "Goiás",
-                            "MA" : "Maranhão",
-                            "MT" : "Mato Grosso",
-                            "MS" : "Mato Grosso do Sul",
-                            "MG" : "Minas Gerais",
-                            "PA" : "Pará",
-                            "PB" : "Paraíba",
-                            "PR" : "Paraná",
-                            "PE" : "Pernambuco",
-                            "PI" : "Piauí",
-                            "RJ" : "Rio de Janeiro",
-                            "RN" : "Rio Grande do Norte",
-                            "RS" : "Rio Grande do Sul",
-                            "RO" : "Rondônia",
-                            "RR" : "Roraima",
-                            "SC" : "Santa Catarina",
-                            "SP" : "São Paulo",
-                            "SE" : "Sergipe",
-                            "TO" : "Tocantins"
-                        };
-                        const localNascimento = document.querySelector(".data-table").rows[4].cells[1].innerText.split(" - ");
+                            const estados = {
+                                "AC" : "Acre",
+                                "AL" : "Alagoas",
+                                "AP" : "Amapá",
+                                "AM" : "Amazonas",
+                                "BA" : "Bahia",
+                                "CE" : "Ceará",
+                                "DF" : "Distrito Federal",
+                                "ES" : "Espírito Santo",
+                                "GO" : "Goiás",
+                                "MA" : "Maranhão",
+                                "MT" : "Mato Grosso",
+                                "MS" : "Mato Grosso do Sul",
+                                "MG" : "Minas Gerais",
+                                "PA" : "Pará",
+                                "PB" : "Paraíba",
+                                "PR" : "Paraná",
+                                "PE" : "Pernambuco",
+                                "PI" : "Piauí",
+                                "RJ" : "Rio de Janeiro",
+                                "RN" : "Rio Grande do Norte",
+                                "RS" : "Rio Grande do Sul",
+                                "RO" : "Rondônia",
+                                "RR" : "Roraima",
+                                "SC" : "Santa Catarina",
+                                "SP" : "São Paulo",
+                                "SE" : "Sergipe",
+                                "TO" : "Tocantins"
+                            };
+                            const localNascimento = document.querySelector(".data-table")?.rows[4]?.cells[1]?.innerText?.split(" - ");
 
-                        const dicionario = {
-                            "DATAATUAL" : dataAtual,
-                            "NOMECIDADAO" : document.querySelector(".data-table").rows[0].cells[1].innerText,
-                            "CPFCIDADAO" : document.querySelector(".data-table").rows[10].cells[1].innerText,
-                            "PAICIDADAO" : document.querySelector(".data-table").rows[3].cells[1].innerText,
-                            "MAECIDADAO" : document.querySelector(".data-table").rows[1].cells[1].innerText,
-                            "DIAN" : dataNascimento[0],
-                            "MESN" : mes[dataNascimento[1]-1],
-                            "ANON" : dataNascimento[2],
-                            "CIDADEN" : localNascimento[0],
-                            "ESTADON" : estados[localNascimento[1]],
-                            "ENDERECO" : document.querySelector(".data-table").rows[12].cells[1].innerText,
-                            "BAIRRO" : "Bairro " + document.querySelector(".data-table").rows[13].cells[1].innerText,
-                            "MUNICIPIO" : document.querySelector(".data-table").rows[16].cells[1].innerText,
-                            "CEP" : document.querySelector(".data-table").rows[15].cells[1].innerText,
-                            "DOCUMENTOS" : docs,
-                            "RACIDADAO" : document.querySelector(".header-bar").innerText.slice(0, 12)
-                        };
-                        return dicionario;
-                    }
-                    }, async (selection) => {
-                    // 3. O resultado volta para cá
-                        let texto;
-                        if(selection && selection[0]){
-                            //alert("O texto da página é: " + selection[0].result);
-                            alert("O texto da página é: " + JSON.stringify(selection[0].result, null, 2));
-
-                            const regex = new RegExp(Object.keys(selection[0].result).join("|"), "gi");
-                            const arquivo = await fetch("../docs/REQUERIMENTOS/ARRIMO/arrimo.txt");
-                            if(!arquivo.ok){
-                                throw new Error("Arquivo não encontrado");
-                            }
-                            texto = await arquivo.text();
-                            alert("Conteudo lido: " + texto);
-                            texto = texto.replace(regex, (palavraCorrespondida) => {
-                                return selection[0].result[palavraCorrespondida];
-                            });
-                            texto = texto.replace("DOCUMENTOS", listaDocs);
-                            alert(texto);
+                            conectivos = ["da", "de", "do", "e"];
+                            const dicionario = {
+                                "DATAATUAL" : dataAtual,
+                                "NOMECIDADAO" : document.querySelector(".data-table").rows[0].cells[1].innerText,
+                                get "CPFCIDADAO"(){
+                                    let cpf = document.querySelector(".data-table").rows[10].cells[1].innerText;
+                                    cpf = cpf.replace(/(\d{3})(\d)/, '$1.$2');
+                                    cpf = cpf.replace(/(\d{3})(\d)/, '$1.$2');
+                                    cpf = cpf.replace(/(\d{3})(\d{1,2})/, '$1-$2');
+                                    return cpf;
+                                },
+                                "PAICIDADAO" : document.querySelector(".data-table").rows[3].cells[1].innerText.split(" ").map(palavra => {
+                                    if(conectivos.includes(palavra.toLowerCase())){
+                                       return  palavra.toLowerCase();
+                                    }
+                                    return palavra.charAt(0).toUpperCase() + palavra.slice(1).toLowerCase();
+                                }).join(" "),
+                                "MAECIDADAO" : document.querySelector(".data-table").rows[1].cells[1].innerText.split(" ").map(palavra => {
+                                    if(conectivos.includes(palavra.toLowerCase())){
+                                       return  palavra.toLowerCase();
+                                    }
+                                    return palavra.charAt(0).toUpperCase() + palavra.slice(1).toLowerCase();
+                                }).join(" "),
+                                "DIAN" : dataNascimento[0],
+                                "MESN" : mes[dataNascimento[1]-1],
+                                "ANON" : dataNascimento[2],
+                                "CIDADEN" : localNascimento[0] = localNascimento[0].charAt(0).toUpperCase() + localNascimento[0].slice(1).toLowerCase(),
+                                "ESTADON" : estados[localNascimento[1]],
+                                "ENDERECO" : document.querySelector(".data-table").rows[12].cells[1].innerText.split(" ").map(palavra => {
+                                    if(conectivos.includes(palavra.toLowerCase())){
+                                       return  palavra.toLowerCase();
+                                    }
+                                    return palavra.charAt(0).toUpperCase() + palavra.slice(1).toLowerCase();
+                                }).join(" "),
+                                "BAIRRO" : "Bairro " + document.querySelector(".data-table").rows[13].cells[1].innerText.split(" ").map(palavra => {
+                                    if(conectivos.includes(palavra.toLowerCase())){
+                                       return  palavra.toLowerCase();
+                                    }
+                                    return palavra.charAt(0).toUpperCase() + palavra.slice(1).toLowerCase();
+                                }).join(" "),
+                                "MUNICIPIO" : document.querySelector(".data-table").rows[16].cells[1].innerText,
+                                get "CEP"(){
+                                    let cep = document.querySelector(".data-table").rows[15].cells[1].innerText;
+                                    cep = cep.replace(/(\d{2})(\d)/, '$1.$2');
+                                    cep = cep.replace(/(\d{3})(\d{1,2})/, '$1-$2');
+                                    return "CEP: " + cep;
+                                },
+                                "LISTADOCUMENTOS" : listaDocs,
+                                "RACIDADAO" : document.querySelector(".header-bar").innerText.slice(0, 12),
+                                "CIDADEALISTAMENTO" : document.querySelector(".jsm-vinculo").innerText,
+                                "DATAALISTAMENTO" : document.querySelector(".alistamento-tipo").innerText,
+                                "ESCOLARIDADE" : "escolaridade: " + document.querySelector(".data-table").rows[8].cells[1].innerText,
+                                "ESTADOCIVIL" : "estado civil: " + document.querySelector(".data-table").rows[7].cells[1].innerText,
+                                "NDEPENDENTES" : "Nº de dependentes: " + numeroDependentes,
+                                "OCUPACAO" : "ocupação: " + ocupacao,
+                                "SALARIO" : "salário: " + salario,
+                                "CASA" : casa,
+                                "ARTIGOS" : listaArtigos,
+                                "VALORARTIGOS" : valorTotal.replace(".", ","),
+                                "VALOREXTENSO" : valorExtenso
+                            };
+                            return dicionario;
                         }
-                        /*const blob = new Blob([texto], { type: 'text/plain;charset=utf-8' });
+                        }, async (selection) => {
+                        // 3. O resultado volta para cá
+                            let texto;
+                            if(chrome.runtime.lastError){
+                                alert("Erro do chrome.scripting.executeScript: " + chrome.runtime.lastError.message);
+                                return;
+                            }
+                            if(!selection || !selection[0] || selection[0].result === null || selection[0].result === undefined){
+                                let detalheErro = (selection && selection[0] && selection[0].error) ? JSON.stringify(selection[0].error) : "sem detalhe (provavelmente exceção dentro da função injetada, ex: querySelector retornando null)";
+                                alert("Não foi possível obter os dados da página. Detalhe: " + detalheErro);
+                                return;
+                            }
+                            if(selection && selection[0]){
+                                //alert("O texto da página é: " + selection[0].result);
+                                alert("O texto da página é: " + JSON.stringify(selection[0].result, null, 2));
 
-                        //3. Cria um link temporário na memória do navegador
-                        const link = document.createElement('a');
+                                const regex = new RegExp(Object.keys(selection[0].result).join("|"), "gi");
+                                const arquivo = await fetch(`../docs/REQUERIMENTOS/ARRIMO/ficha-socioeconomica.txt`);
+                                if(!arquivo.ok){
+                                    throw new Error("Arquivo não encontrado");
+                                }
+                                texto = await arquivo.text();
+                                alert("Conteudo lido: " + texto);
+                                texto = texto.replace(regex, (palavraCorrespondida) => {
+                                    return selection[0].result[palavraCorrespondida];
+                                });
+                                alert("texto final: " + texto);
+                            }
 
-                        // 4. Converte o Blob numa URL que o navegador consegue descarregar
-                        link.href = URL.createObjectURL(blob);
-
-                        // 5. Define o nome do arquivo que será salvo no PC do utilizador
-                        link.download = 'requerimento-modificado.txt';
-
-                        // 6. Simula o clique no link para iniciar o download automaticamente
-                        link.click();
-
-                        // 7. Limpa a memória libertando a URL criada
-                        URL.revokeObjectURL(link.href);*/
-
-                        alert("Arquivo .txt alterado e descarregado com sucesso!");
-                        alert(listaDocs);
-                    }
-                )
-            } catch (error) {
-                console.error("Erro ao carregar o arquivo do projeto. " + error);
+                            alert("Arquivo .txt alterado e descarregado com sucesso!");
+                            alert("lista de docs: " + listaDocs);
+                        }
+                    )
+                } catch (error) {
+                    console.error("Erro ao carregar o arquivo do projeto. " + error);
+                }
             }
-        }
         });
-
-        function atualizarTipoRequerimento(valor){
-            if(valor != "vazio"){
-                fieldsetPai.classList.remove("hidden");
-                fieldsetPai.disabled = false;
-                fieldsetPai.querySelectorAll("input").forEach(input => {
-                    if(input.closest("fieldset") === fieldsetPai){
-                        input.disabled = false;
-                    }
-                });
-            }
-            else{
-                fieldsetPai.classList.add("hidden");
-                fieldsetPai.querySelectorAll("input").forEach(el => el.disabled = true);
-            }
-
-            fieldsetPai.querySelectorAll("fieldset").forEach(el => el.classList.add("hidden"));
-            fieldsetPai.querySelectorAll("fieldset").forEach(el => el.disabled = true);
-            const tipoFieldset = fieldsetPai.querySelector(`#tipo-${valor}`);
-            if(tipoFieldset){
-                tipoFieldset.classList.remove("hidden");
-                tipoFieldset.disabled = false;
-                tipoFieldset.querySelectorAll("input").forEach(el => el.disabled = false);
-            }
-        }
-    }
-});
+    //}
+//});

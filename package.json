@@ -12,6 +12,7 @@
   "type": "commonjs",
   "dependencies": {
     "@tailwindcss/cli": "^4.3.0",
+    "extenso": "^2.1.0",
     "jspdf": "^4.2.1",
     "tailwindcss": "^4.3.0"
   }

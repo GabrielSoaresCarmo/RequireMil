@@ -14,7 +14,6 @@
     --spacing: 0.25rem;
     --container-md: 28rem;
     --container-xl: 36rem;
-    --container-2xl: 42rem;
     --font-weight-bold: 700;
     --radius-lg: 0.5rem;
     --default-transition-duration: 150ms;
@@ -100,6 +99,7 @@
   }
   img, svg, video, canvas, audio, iframe, embed, object {
     display: block;
+    vertical-align: middle;
   }
   img, video {
     max-width: 100%;
@@ -177,6 +177,9 @@
   .flex {
     display: flex;
   }
+  .grid {
+    display: grid;
+  }
   .hidden {
     display: none;
   }
@@ -219,6 +222,9 @@
   .resize {
     resize: both;
   }
+  .grid-cols-5 {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
   .flex-col {
     flex-direction: column;
   }
@@ -251,11 +257,14 @@
   .bg-blue-700 {
     background-color: var(--color-blue-700);
   }
-  .bg-blue-900 {
-    background-color: var(--color-blue-900);
-  }
   .bg-slate-100 {
     background-color: var(--color-slate-100);
+  }
+  .p-1 {
+    padding: calc(var(--spacing) * 1);
+  }
+  .p-2 {
+    padding: calc(var(--spacing) * 2);
   }
   .p-4 {
     padding: calc(var(--spacing) * 4);
