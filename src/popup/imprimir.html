@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Imprimir Documento</title>
+    <style>
+        @page { 
+            size: A4; 
+            margin: 20mm 15mm; 
+        }
+        body { 
+            font-family: "Times New Roman", serif; 
+            font-size: 12pt; 
+            line-height: 1.5; 
+            color: #000; 
+            margin: 0; 
+            padding: 0; 
+        }
+        pre { 
+            font-family: "Times New Roman", serif; 
+            white-space: pre-wrap; 
+            word-wrap: break-word; 
+            margin: 0; 
+        }
+        .quebra-pagina { 
+            page-break-before: always; 
+        }
+        .alinhado-centro {
+            text-align: center;
+        }
+        .justificado {
+            text-align: justify;
+        }
+        .alinhado-direita {
+            text-align: right;
+        }
+        .alinhado-esquerda {
+            text-align: left;
+        }
+        .cabecalho {
+            display: flex;
+            /* justify-between */
+            justify-content: space-between;
+            /* w-full */
+            width: 100%;
+        }
+        .requerimento {
+            margin: 0;
+            padding-left: 4rem;
+        }
+    </style>
+</head>
+<body>
+    <div id="conteudo"></div>
+
+    <script src="imprimir.js"></script>
+</body>
+</html>
