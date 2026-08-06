@@ -1,4 +1,4 @@
-const valorTaxaMinima = 6.56;
+const valorTaxaMinima = 6.69;
 const todosArtigos = {
     "47": valorTaxaMinima * 5,
     "52": valorTaxaMinima * 5,
@@ -23,8 +23,10 @@ const tipoRequerimento = document.querySelector("#tipo-requerimento");
 const fieldsetPai = document.querySelector("#copias-docs");
 const dependente = document.querySelector("#dependente");
 const tipoNome = document.querySelector("#nome");
+const mudouNome = document.querySelectorAll(`input[name="mudou-nome[]"]`);
 const tipoCertidao = document.querySelectorAll(".certidao-alistado");
 const tipoCasa = document.querySelector("#tipo-casa");
+const ocupacao = document.querySelector("#input-ocupacao");
 const dicionarioDocs = {
     "certidao-nascimento": "Cópia da certidão de nascimento",
     "certidao-casamento": "Cópia da certidão de casamento",
@@ -47,10 +49,10 @@ const dicionarioDocs = {
 const listaArquivos = {
     "arrimo": ["../docs/REQUERIMENTOS/ARRIMO/arrimo.txt", "../docs/REQUERIMENTOS/ARRIMO/declaracao-arrimo.txt", "../docs/REQUERIMENTOS/ARRIMO/declaracao-autonomo.txt"],
     "isencao-txmt": ["../docs/REQUERIMENTOS/ARRIMO/isencao-txmt.txt", "../docs/REQUERIMENTOS/ARRIMO/ficha-socioeconomica.txt", "../docs/REQUERIMENTOS/ARRIMO/modelo-cidadao.txt"],
-    "retificacao-dados-cadastrais": "../docs/REQUERIMENTOS/ARRIMO/retificacao-dados-cadastrais.txt",
+    "retificacao-dados-cadastrais": ["../docs/REQUERIMENTOS/ARRIMO/retificacao-dados-cadastrais.txt"],
 };
 
-tipoRequerimento.addEventListener("change", (event) => {
+tipoRequerimento.addEventListener("change", async (event) => {
     fieldsetPai.querySelectorAll("fieldset, div.tipo-dependente").forEach(el => el.classList.add("hidden"));
     fieldsetPai.querySelectorAll("fieldset").forEach(el => el.disabled = true);
     const tipoFieldset = fieldsetPai.querySelector(`#tipo-${event.target.value}`);
@@ -79,6 +81,26 @@ tipoRequerimento.addEventListener("change", (event) => {
     }
     else {
         tipoCertidao[1].closest("label").classList.add("hidden");
+    }
+    try {
+        let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        chrome.scripting.executeScript({
+            target: { tabId: tab.id },
+            args: [],
+            func: () => {
+                if(document.querySelector(".data-table").rows[11].cells[0].innerText == "Ocupação"){
+                    return document.querySelector(".data-table").rows[11].cells[1].innerText;
+                }
+            }
+        }, (selection) => {
+            if (selection && selection[0]) {
+                ocupacao.value = selection[0].result.split(" ").map(palavra => {
+                    return palavra.charAt(0).toUpperCase() + palavra.slice(1).toLowerCase();
+                }).join(" ");
+            }
+        });
+    } catch (error) {
+        alert("Erro ao carregar o arquivo do projeto. " + error);
     }
 });
 
@@ -110,38 +132,41 @@ tipoCasa.addEventListener("change", (event) => {
 });
 
 tipoNome.addEventListener("change", (event) => {
-    document.querySelector(".nome-retificado").classList.remove("hidden");
-    document.querySelector(".nome-retificado").disabled = false;
-    const textoNome = document.querySelector("#texto-nome");
-    textoNome.textContent = "?";
-    if (event.target.value == "mae") {
-        textoNome.textContent = textoNome.textContent.replace("?", "da mãe");
-    }
-    else {
-        textoNome.textContent = textoNome.textContent.replace("?", `do ${event.target.value}`);
-    }
+    const mudouNome = document.querySelectorAll(`input[name="mudou-nome[]"]`);
+    mudouNome.forEach(tipo => {
+        const labelNomeNovo = document.querySelector(`label[name="label-nome-${tipo.value}"]`);
+        if(labelNomeNovo){
+            labelNomeNovo.classList.toggle("hidden", !tipo.checked);
+            labelNomeNovo.disabled = !tipo.checked;
+        }
+    });
 });
 
 button.addEventListener("click", async (event) => {
     event.preventDefault();
     const form = document.querySelector("#form-docs");
     const opcao = tipoRequerimento.value;
+    let comecoFrase = "";
+    let ultimoItem = "";
+    let listaDocs = "";
+
+    //lista de documentos copiados anexos ao requerimento
     const valoresMarcados = document.querySelectorAll(`input[name="documentos[]"]:not([disabled]):checked, 
-                                                               input[name="tipo-certidao-alistado"]:not([disabled]):checked, 
-                                                               input[name="carteira-trabalho"]:not([disabled]):checked, 
-                                                               input[name="tipo-certidao-mae"]:not([disabled]):checked`);
+                                                       input[name="tipo-certidao-alistado"]:not([disabled]):checked, 
+                                                       input[name="carteira-trabalho"]:not([disabled]):checked, 
+                                                       input[name="tipo-certidao-mae"]:not([disabled]):checked`);
     const arrayDocs = Array.from(valoresMarcados).map(doc => dicionarioDocs[doc.value]);
-    let comecoFrase = arrayDocs.slice(0, -1).join(", ");
-    let ultimoItem = arrayDocs.at(-1)
-    let listaDocs = `${comecoFrase} e ${ultimoItem}`;
+    let tipoArrimo = "";
+    alert(arrayDocs.indexOf("Ficha socioeconômica para isenção de taxas e multas"));
+  
+    //conteudo do requerimento de isençao de taxa e multa
     const numeroDependentes = document.querySelector("#input-numero-dependentes").value;
-    const ocupacao = document.querySelector("#input-ocupacao").value;
     const salario = document.querySelector("#input-salario").value;
     const radioTipoCasa = document.querySelector(".radio-tipo-casa:checked")?.value;
     const inputValorAluguel = document.querySelector(".input-valor-aluguel").value;
     let casa;
     if (radioTipoCasa == "alugada") {
-        casa = `Casa: ()Própria (X)Alugada - Aluguel: ${inputValorAluguel}`;
+        casa = `Casa: ()Própria (X)Alugada - Aluguel: R$ ${inputValorAluguel}`;
     }
     else {
         casa = "Casa: (X)Própria ()Alugada";
@@ -166,6 +191,21 @@ button.addEventListener("click", async (event) => {
     valorExtenso = extenso(valorTotal.replace(".", ","), { mode: "currency" });
     alert("o valor total e: " + valorTotal);
 
+    //conteudo do requerimento de retificacao de dados cadastrais
+    const tipoCertidaoRetificacao = document.querySelector(`input[name="tipo-certidao-retificacao"]:checked`);
+
+    const tipoDocumentoRetificacao = tipoCertidaoRetificacao ? dicionarioDocs[tipoCertidaoRetificacao.value] : "";
+    const novoNome = document.querySelectorAll(`input[name="texto-nome-retificado[]"]`);
+    const listaNovoNome = Array.from(novoNome).map(nome => nome.value.trim()).filter(valor => valor !== "");
+
+    const quemMudouNome = document.querySelectorAll(`input[name="mudou-nome[]"]:checked`);
+    const listaQuemMudouNome = Array.from(quemMudouNome).map(quemMudou => quemMudou.value);
+    const paresQuemMudou = listaQuemMudouNome.map((valor, indice) => [valor, listaNovoNome[indice]]);
+    /*console.dir(listaNovoNome);
+    alert(listaQuemMudouNome);
+    alert(paresQuemMudou);
+    alert(tipoDocumentoRetificacao);*/
+  
     switch (opcao) {
         case "vazio":
             alert("Por favor, selecione uma opção válida");
@@ -178,6 +218,11 @@ button.addEventListener("click", async (event) => {
             break;
         case "isencao-txmt":
             alert("Isenção de Taxas e Multas");
+            const itemRemovido = arrayDocs.splice(arrayDocs.indexOf("Ficha socioeconômica para isenção de taxas e multas"), 1);
+            arrayDocs.splice(0, 0, itemRemovido);
+            comecoFrase = arrayDocs.slice(0, -1).join(", ");
+            ultimoItem = arrayDocs.at(-1)
+            listaDocs = `${comecoFrase} e ${ultimoItem}`;
             break;
         case "maior-30":
             alert("Maior de 30 anos");
@@ -185,18 +230,27 @@ button.addEventListener("click", async (event) => {
         case "retificacao-dados-cadastrais":
             alert("Retificação de dados cadastrais");
             break;
+        default:
+            comecoFrase = arrayDocs.slice(0, -1).join(", ");
+            ultimoItem = arrayDocs.at(-1)
+            listaDocs = `${comecoFrase} e ${ultimoItem}`;
+            break;
     }
 
-    lerArquivo(listaDocs, numeroDependentes, ocupacao, salario, casa, listaArtigos, valorTotal, valorExtenso);
     alert("array dos docs: " + arrayDocs);
+    lerArquivo(opcao, listaDocs, tipoArrimo, numeroDependentes, ocupacao.value, salario, casa, listaArtigos, valorTotal, valorExtenso, tipoDocumentoRetificacao, paresQuemMudou);
     //window.location.reload();
-    async function lerArquivo(listaDocs, numeroDependentes, ocupacao, salario, casa, listaArtigos, valorTotal, valorExtenso) {
+    async function lerArquivo(opcao, listaDocs, tipoArrimo, numeroDependentes, ocupacao, salario, casa, listaArtigos, valorTotal, valorExtenso, tipoDocumentoRetificacao, paresQuemMudou) {
         try {
             let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
             chrome.scripting.executeScript({
                 target: { tabId: tab.id },
-                args: [listaDocs, numeroDependentes, ocupacao, salario, casa, listaArtigos, valorTotal, valorExtenso],
-                func: async (listaDocs, numeroDependentes, ocupacao, salario, casa, listaArtigos, valorTotal, valorExtenso) => {
+                args: [opcao, listaDocs, tipoArrimo, numeroDependentes, ocupacao, salario, casa, listaArtigos, valorTotal, valorExtenso, tipoDocumentoRetificacao, paresQuemMudou],
+                func: async (opcao, listaDocs, tipoArrimo, numeroDependentes, ocupacao, salario, casa, listaArtigos, valorTotal, valorExtenso, tipoDocumentoRetificacao, paresQuemMudou) => {
+                    const nomeSermilAlistado = document.querySelector(".data-table").rows[0].cells[1].innerText;
+                    const nomeSermilMae = document.querySelector(".data-table").rows[1].cells[1].innerText;
+                    const nomeSermilPai = document.querySelector(".data-table").rows[3].cells[1].innerText;
+
                     const data = new Date();
                     const dia = String(data.getDate()).padStart(2, "0");
                     const mes = [
@@ -251,43 +305,62 @@ button.addEventListener("click", async (event) => {
                     conectivos = ["da", "de", "do", "e"];
                     const dicionario = {
                         "DATAATUAL": dataAtual,
-                        "NOMECIDADAO": document.querySelector(".data-table").rows[0].cells[1].innerText,
+                        get "NOMECIDADAO"(){
+                            let novoNome = "";
+                            if(opcao == "retificacao-dados-cadastrais"){
+                                paresQuemMudou.forEach(([chave, valor]) => {
+                                    if(chave == "alistado"){
+                                        novoNome = valor.toUpperCase();
+                                    }
+                                });
+                                return novoNome;
+                            }
+                            else{
+                                return nomeSermilAlistado;
+                            }
+                        },
                         get "CPFCIDADAO"() {
                             let cpf = document.querySelector(".data-table").rows[10].cells[1].innerText;
                             cpf = cpf.replace(/(\d{3})(\d)/, "$1.$2");
                             cpf = cpf.replace(/(\d{3})(\d)/, "$1.$2");
                             cpf = cpf.replace(/(\d{3})(\d{1,2})/, "$1-$2");
-                            return cpf;
+                            return "CPF: " + cpf;
                         },
-                        "PAICIDADAO": document.querySelector(".data-table").rows[3].cells[1].innerText.split(" ").map(palavra => {
-                            if (conectivos.includes(palavra.toLowerCase())) {
-                                return palavra.toLowerCase();
+                        get "PAICIDADAO"(){
+                            let novoNome = "";
+                            if(opcao == "retificacao-dados-cadastrais"){
+                                paresQuemMudou.forEach(([chave, valor]) => {
+                                    if(chave == "pai"){
+                                        novoNome = capitalizar(valor);
+                                    }
+                                });
+                                return novoNome;
                             }
-                            return palavra.charAt(0).toUpperCase() + palavra.slice(1).toLowerCase();
-                        }).join(" "),
-                        "MAECIDADAO": document.querySelector(".data-table").rows[1].cells[1].innerText.split(" ").map(palavra => {
-                            if (conectivos.includes(palavra.toLowerCase())) {
-                                return palavra.toLowerCase();
+                            else{
+                                return capitalizar(nomeSermilPai);
                             }
-                            return palavra.charAt(0).toUpperCase() + palavra.slice(1).toLowerCase();
-                        }).join(" "),
+                        },
+                        get "MAECIDADAO"(){
+                            let novoNome = "";
+                            if(opcao == "retificacao-dados-cadastrais"){
+                                paresQuemMudou.forEach(([chave, valor]) => {
+                                    if(chave == "mae"){
+                                        novoNome = capitalizar(valor);
+                                    }
+                                });
+                                return novoNome;
+                            }
+                            else{
+                                return capitalizar(nomeSermilMae);
+                            }
+                        },
                         "DIAN": dataNascimento[0],
                         "MESN": mes[dataNascimento[1] - 1],
                         "ANON": dataNascimento[2],
                         "CIDADEN": localNascimento[0] = localNascimento[0].charAt(0).toUpperCase() + localNascimento[0].slice(1).toLowerCase(),
                         "ESTADON": estados[localNascimento[1]],
-                        "ENDERECO": document.querySelector(".data-table").rows[12].cells[1].innerText.split(" ").map(palavra => {
-                            if (conectivos.includes(palavra.toLowerCase())) {
-                                return palavra.toLowerCase();
-                            }
-                            return palavra.charAt(0).toUpperCase() + palavra.slice(1).toLowerCase();
-                        }).join(" "),
-                        "BAIRRO": "Bairro " + document.querySelector(".data-table").rows[13].cells[1].innerText.split(" ").map(palavra => {
-                            if (conectivos.includes(palavra.toLowerCase())) {
-                                return palavra.toLowerCase();
-                            }
-                            return palavra.charAt(0).toUpperCase() + palavra.slice(1).toLowerCase();
-                        }).join(" "),
+                        "ENDERECO": capitalizar(document.querySelector(".data-table").rows[12].cells[1].innerText),
+                        "BAIRRO": capitalizar(document.querySelector(".data-table").rows[13].cells[1].innerText),
                         "MUNICIPIO": document.querySelector(".data-table").rows[16].cells[1].innerText,
                         get "CEP"() {
                             let cep = document.querySelector(".data-table").rows[15].cells[1].innerText;
@@ -296,24 +369,67 @@ button.addEventListener("click", async (event) => {
                             return "CEP: " + cep;
                         },
                         "LISTADOCUMENTOS": listaDocs,
-                        "RACIDADAO": document.querySelector(".header-bar").innerText.slice(0, 12),
+                        "RACIDADAO": "RA " + document.querySelector(".header-bar").innerText.slice(0, 12),
+                        get "NOMEARRIMO"(){
+                            if(tipoArrimo == "mae"){
+                                return `${this["MAECIDADAO"]}`;
+                            }
+                            else{
+                                return `nome generico`;
+                            }
+                        },
+                        "TIPOARRIMO" : tipoArrimo,
+                        "NOMETRABALHO": "",
                         "CIDADEALISTAMENTO": document.querySelector(".jsm-vinculo").innerText,
                         "DATAALISTAMENTO": document.querySelector(".alistamento-tipo").innerText,
                         "ESCOLARIDADE": "escolaridade: " + document.querySelector(".data-table").rows[8].cells[1].innerText,
                         "ESTADOCIVIL": "estado civil: " + document.querySelector(".data-table").rows[7].cells[1].innerText,
                         "NDEPENDENTES": "Nº de dependentes: " + numeroDependentes,
                         "OCUPACAO": "ocupação: " + ocupacao,
-                        "SALARIO": "salário: " + salario,
+                        "SALARIO": "salário: R$ " + salario,
                         "CASA": casa,
                         "ARTIGOS": listaArtigos,
                         "VALORARTIGOS": valorTotal.replace(".", ","),
-                        "VALOREXTENSO": valorExtenso
+                        "VALOREXTENSO": valorExtenso,
+                        "TIPODOCUMENTO": tipoDocumentoRetificacao,
+                        get "TIPOPESSOA"(){
+                            let textoQuemMudouNome = "";
+                            paresQuemMudou.forEach(([chave, valor], indice) => {
+                                if(chave == "alistado"){
+                                    textoQuemMudouNome += "o próprio nome de " + capitalizar(nomeSermilAlistado) + " para " + valor;
+                                }
+                                else if(chave == "mae"){
+                                    textoQuemMudouNome += "o nome da mae de " + capitalizar(nomeSermilMae) + " para " + valor;
+                                }
+                                else if(chave == "pai"){
+                                    textoQuemMudouNome += "o nome do pai de " + capitalizar(nomeSermilPai) + " para " + valor;
+                                }
+                                
+                                if(indice == (paresQuemMudou.length-2)){
+                                    textoQuemMudouNome += " e "
+                                }
+                                else{
+                                    textoQuemMudouNome += ", "
+                                }
+                            });
+                            return textoQuemMudouNome;
+                        },
                     };
+
+                    function capitalizar(texto){
+                        return texto.split(" ").map(palavra => {
+                            if (conectivos.includes(palavra.toLowerCase())) {
+                                return palavra.toLowerCase();
+                            }
+                            return palavra.charAt(0).toUpperCase() + palavra.slice(1).toLowerCase();
+                        }).join(" ");
+                    }
+
                     return dicionario;
                 }
             }, async (selection) => {
                 // 3. O resultado volta para cá
-                let texto;
+                let texto = "";
                 if (chrome.runtime.lastError) {
                     alert("Erro do chrome.scripting.executeScript: " + chrome.runtime.lastError.message);
                     return;
@@ -326,7 +442,7 @@ button.addEventListener("click", async (event) => {
                 if (selection && selection[0]) {
                     alert("O texto da página é: " + JSON.stringify(selection[0].result, null, 2));
 
-                    const regex = new RegExp(Object.keys(selection[0].result).join("|"), "gi");
+                    const regex = new RegExp(Object.keys(selection[0].result).join("|"), "g");
                     const caminhos = listaArquivos[opcao];
                     let textosBrutos = [];
 
@@ -336,44 +452,19 @@ button.addEventListener("click", async (event) => {
                         //Aguarda todos os arquivos serem baixados
                         textosBrutos = await Promise.all(requisicoes);
                     } else {
-                        alert("⚠️ Opção inválida ou não encontrada!");
+                        alert("Opção inválida ou não encontrada!");
                     }
-
-                    const corpoDocumentoHTML = textosBrutos.map(texto => `<pre>${texto}</pre>`).join(`<div class="quebra-pagina"></div>`);
-                    const documentoFinalHTML = `
-                        <!DOCTYPE html>
-                        <html>
-                        <head>
-                            <meta charset="UTF-8">
-                            <style>
-                                @page {
-                                    size: A4;
-                                    margin: 20mm 15mm;
-                                }
-                                body {
-                                    font-family: "Times New Roman", serif;
-                                    font-size: 12pt;
-                                    line-height: 1.5;
-                                    color: #000;
-                                    margin: 0;
-                                    padding: 0;
-                                }
-                                pre {
-                                    font-family: "Times New Roman", serif;
-                                    white-space: pre-wrap;
-                                    word-wrap: break-word;
-                                    margin: 0;
-                                }
-                                .quebra-pagina {
-                                    page-break-before: always; /* Faz o próximo arquivo começar numa folha limpa */
-                                }
-                            </style>
-                        </head>
-                        <body>
-                            ${corpoDocumentoHTML}
-                        </body>
-                        </html>
-                    `;
+                    let corpoDocumentoHTML = textosBrutos.map(texto => {
+                        texto = texto.replace(regex, (match) => selection[0].result[match]);
+                        return `<pre>${texto}</pre>`
+                    }).join(`<div class="quebra-pagina"></div>`);
+                    let textoCopiado = "";
+                    const regexTextoCopiado = /1\.\s*([\s\S]*?CEP:\s*\d{2}\.?\d{3}-\d{3})/i;
+                    const match = corpoDocumentoHTML.match(regexTextoCopiado);
+                    if(match){
+                        textoCopiado = match[1].trim();
+                    }
+                    corpoDocumentoHTML = corpoDocumentoHTML.replace(/TEXTOCOPIADO/g, textoCopiado);
 
                     chrome.tabs.create({
                         url: chrome.runtime.getURL("popup/imprimir.html"),
@@ -382,16 +473,14 @@ button.addEventListener("click", async (event) => {
                         const mapearAba = (message, sender, sendResponse) => {
                             if (message.action === "requisitarDadosImpressao") {
                                 //Entrega o HTML completo e pesado com segurança total
-                                sendResponse({ html: documentoFinalHTML });
+                                sendResponse({ html: corpoDocumentoHTML });
                                 chrome.runtime.onMessage.removeListener(mapearAba); // Desliga o canal após o uso
                             }
                         };
                         chrome.runtime.onMessage.addListener(mapearAba);
                     });
                 }
-                /*alert("lista de docs: " + listaDocs);*/
-            }
-            )
+            });
         } catch (error) {
             console.error("Erro ao carregar o arquivo do projeto. " + error);
         }
