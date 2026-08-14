@@ -5,7 +5,6 @@ const todosArtigos = {
     "60": valorTaxaMinima * 15,
     "75": valorTaxaMinima * 3,
     "103": valorTaxaMinima * 1,
-    "225": valorTaxaMinima * 0,
     "2/24": valorTaxaMinima * 1,
     "107/2": valorTaxaMinima * 1,
     "176/1": valorTaxaMinima * 1,
@@ -18,27 +17,33 @@ const todosArtigos = {
     "178/2": valorTaxaMinima * 5,
     "179/2": valorTaxaMinima * 10,
 }
-const button = document.getElementById("btn");
-const tipoRequerimento = document.querySelector("#tipo-requerimento");
-const fieldsetPai = document.querySelector("#copias-docs");
-const dependente = document.querySelector("#dependente");
-const tipoNome = document.querySelector("#nome");
-const mudouNome = document.querySelectorAll(`input[name="mudou-nome[]"]`);
-const tipoCertidao = document.querySelectorAll(".certidao-alistado");
-const tipoCasa = document.querySelector("#tipo-casa");
-const ocupacao = document.querySelector("#input-ocupacao");
+const button = document.getElementById("btn") || "";
+const tipoRequerimento = document.querySelector("#tipo-requerimento") || "";
+const fieldsetPai = document.querySelector("#copias-docs") || "";
+const dependente = document.querySelector("#dependente") || "";
+const tipoNome = document.querySelector("#nome") || "";
+const mudouNome = document.querySelectorAll(`input[name="mudou-nome[]"]`) || "";
+const tipoCertidao = document.querySelectorAll(".certidao-alistado") || "";
+const tipoCasa = document.querySelector("#tipo-casa") || "";
+const ocupacao = document.querySelector("#input-ocupacao") || "";
+const divCarteira = document.querySelector("#carteira") || "";
+const labelSalario = document.querySelector("#salario") || "";
+let valorSiglaDoc = "";
 const dicionarioDocs = {
     "certidao-nascimento": "Cópia da certidão de nascimento",
     "certidao-casamento": "Cópia da certidão de casamento",
-    "documento-foto": "Cópia do documento com foto",
+    get "documento-foto"(){
+        valorSiglaDoc = document.querySelector(`input[name="tipo-documento-foto"]:checked`).value || "";
+        return `Cópia do documento com foto (${valorSiglaDoc})`;
+    },
     "comprovante-residencia": "Cópia do comprovante de residência",
     "carteira-trabalho": "Cópia da carteira de trabalho",
     "declaracao-autonomo": "Declaração de autônomo",
     "certidao-nascimento-mae": "Cópia da certidão de nascimento da mãe",
     "certidao-casamento-mae": "Cópia da certidão de casamento da mãe",
-    "documento-foto-mae": "Cópia do documento com foto da mãe",
-    "certidao-nascimento-filho": "Cópia da certidão de nascimento do filho",
-    "documento-foto-filho": "Cópia do documento com foto do filho",
+    "documento-foto-mae": `Cópia do documento com foto da mãe`,
+    "certidao-nascimento-filho": "Cópia da certidão de nascimento do(a) filho(a)",
+    "documento-foto-filho": `Cópia do documento com foto do(a) filho(a)`,
     "atestado-medico": "Cópia do atestado médico",
     "ficha-socioeconomica": "Ficha socioeconômica para isenção de taxas e multas",
     "gru-art-225-rlsm": "Cópia da GRU do Art. 225 do RLSM",
@@ -47,15 +52,17 @@ const dicionarioDocs = {
     "atestado-desobrigacao": "Atestado de Desobrigação",
 };
 const listaArquivos = {
-    "arrimo": ["../docs/REQUERIMENTOS/ARRIMO/arrimo.txt", "../docs/REQUERIMENTOS/ARRIMO/declaracao-arrimo.txt", "../docs/REQUERIMENTOS/ARRIMO/declaracao-autonomo.txt"],
-    "isencao-txmt": ["../docs/REQUERIMENTOS/ARRIMO/isencao-txmt.txt", "../docs/REQUERIMENTOS/ARRIMO/ficha-socioeconomica.txt", "../docs/REQUERIMENTOS/ARRIMO/modelo-cidadao.txt"],
-    "retificacao-dados-cadastrais": ["../docs/REQUERIMENTOS/ARRIMO/retificacao-dados-cadastrais.txt"],
+    "arrimo": ["../docs/requerimentos/arrimo/arrimo.txt", "../docs/requerimentos/arrimo/declaracao-arrimo.txt", "../docs/requerimentos/arrimo/declaracao-autonomo.txt"],
+    "isencao-servico" : ["../docs/requerimentos/isencao-servico/isencao-servico.txt"],
+    "isencao-txmt": ["../docs/requerimentos/isencao-txmt/isencao-txmt.txt", "../docs/requerimentos/isencao-txmt/ficha-socioeconomica.txt", "../docs/requerimentos/isencao-txmt/modelo-cidadao.txt"],
+    "maior-30" : ["../docs/requerimentos/maior-30/maior-30.txt"],
+    "retificacao-dados-cadastrais": ["../docs/requerimentos/retificacao/retificacao-dados-cadastrais.txt"],
 };
 
 tipoRequerimento.addEventListener("change", async (event) => {
     fieldsetPai.querySelectorAll("fieldset, div.tipo-dependente").forEach(el => el.classList.add("hidden"));
-    fieldsetPai.querySelectorAll("fieldset").forEach(el => el.disabled = true);
-    const tipoFieldset = fieldsetPai.querySelector(`#tipo-${event.target.value}`);
+    fieldsetPai.querySelectorAll("fieldset, input").forEach(el => el.disabled = true);
+    const tipoFieldset = fieldsetPai.querySelector(`#tipo-${event.target.value}`) || "";
     if (event.target.value != "vazio") {
         fieldsetPai.classList.remove("hidden");
         fieldsetPai.disabled = false;
@@ -68,6 +75,11 @@ tipoRequerimento.addEventListener("change", async (event) => {
             tipoFieldset.classList.remove("hidden");
             tipoFieldset.disabled = false;
             tipoFieldset.querySelectorAll("input").forEach(el => el.disabled = false);
+            if(tipoFieldset.id == "tipo-arrimo"){
+                labelSalario.querySelector("input").disabled = false;
+                divCarteira.insertAdjacentElement("beforeend", labelSalario);
+                alert("TIPO ARRIMO: ");
+            }
         }
     }
     else {
@@ -88,9 +100,13 @@ tipoRequerimento.addEventListener("change", async (event) => {
             target: { tabId: tab.id },
             args: [],
             func: () => {
-                if(document.querySelector(".data-table").rows[11].cells[0].innerText == "Ocupação"){
-                    return document.querySelector(".data-table").rows[11].cells[1].innerText;
-                }
+                const linhaTabela = document.querySelectorAll(".data-table tr") || "";
+                //if(linhaTabela[11].cells[0].innerText == "Ocupação"){
+                    return linhaTabela[10].cells[1].innerText == "Ocupação" && linhaTabela[11].cells[1].innerText ? linhaTabela[11].cells[1].innerText : "";
+                //}
+                //else{
+                //    return "";
+                //}
             }
         }, (selection) => {
             if (selection && selection[0]) {
@@ -104,13 +120,13 @@ tipoRequerimento.addEventListener("change", async (event) => {
     }
 });
 
-tipoCertidao[1].addEventListener("change", () => { tipoCertidao[0].checked = false });
 tipoCertidao[0].addEventListener("change", () => { tipoCertidao[1].checked = false });
+tipoCertidao[1].addEventListener("change", () => { tipoCertidao[0].checked = false });
 
 dependente.addEventListener("change", (event) => {
     document.querySelectorAll(".tipo-dependente").forEach(el => el.classList.add("hidden"));
     document.querySelectorAll(".tipo-dependente input").forEach(el => el.checked = false);
-    const tipoDependente = document.querySelector(`.tipo-dependente[name="docs-${event.target.value}"]`);
+    const tipoDependente = document.querySelector(`.tipo-dependente[name="docs-${event.target.value}"]`) || "";
     if (tipoDependente) {
         tipoDependente.classList.remove("hidden");
         tipoDependente.querySelectorAll("input").forEach(el => el.disabled = false);
@@ -118,8 +134,8 @@ dependente.addEventListener("change", (event) => {
 });
 
 tipoCasa.addEventListener("change", (event) => {
-    const labelValorAluguel = document.querySelector(".label-valor-aluguel");
-    const inputValorAluguel = document.querySelector(".input-valor-aluguel");
+    const labelValorAluguel = document.querySelector(".label-valor-aluguel") || "";
+    const inputValorAluguel = document.querySelector(".input-valor-aluguel") || "";
     if (event.target.value == "alugada") {
         labelValorAluguel.classList.remove("hidden");
         inputValorAluguel.disabled = false;
@@ -132,9 +148,9 @@ tipoCasa.addEventListener("change", (event) => {
 });
 
 tipoNome.addEventListener("change", (event) => {
-    const mudouNome = document.querySelectorAll(`input[name="mudou-nome[]"]`);
+    const mudouNome = document.querySelectorAll(`input[name="mudou-nome[]"]`) || "";
     mudouNome.forEach(tipo => {
-        const labelNomeNovo = document.querySelector(`label[name="label-nome-${tipo.value}"]`);
+        const labelNomeNovo = document.querySelector(`label[name="label-nome-${tipo.value}"]`) || "";
         if(labelNomeNovo){
             labelNomeNovo.classList.toggle("hidden", !tipo.checked);
             labelNomeNovo.disabled = !tipo.checked;
@@ -144,26 +160,33 @@ tipoNome.addEventListener("change", (event) => {
 
 button.addEventListener("click", async (event) => {
     event.preventDefault();
-    const form = document.querySelector("#form-docs");
+    const form = document.querySelector("#form-docs") || "";
     const opcao = tipoRequerimento.value;
     let comecoFrase = "";
     let ultimoItem = "";
     let listaDocs = "";
+    const salario = document.querySelector("#input-salario").value || "";
+    let salarioExtenso = salario ? extenso(salario, { mode: "currency" }) : "";
 
     //lista de documentos copiados anexos ao requerimento
-    const valoresMarcados = document.querySelectorAll(`input[name="documentos[]"]:not([disabled]):checked, 
-                                                       input[name="tipo-certidao-alistado"]:not([disabled]):checked, 
-                                                       input[name="carteira-trabalho"]:not([disabled]):checked, 
-                                                       input[name="tipo-certidao-mae"]:not([disabled]):checked`);
+    const valoresMarcados = document.querySelectorAll(`
+        input[name="documentos[]"]:not([disabled]):checked,
+        input[name="carteira-trabalho"]:not([disabled]):checked,
+        input[name="tipo-certidao-mae"]:not([disabled]):checked,
+        input[name="tipo-certidao-alistado"]:not([disabled]):checked
+    `) || "";
     const arrayDocs = Array.from(valoresMarcados).map(doc => dicionarioDocs[doc.value]);
-    let tipoArrimo = "";
-    alert(arrayDocs.indexOf("Ficha socioeconômica para isenção de taxas e multas"));
+
+    //cconteudo do requerimento de arrimo de familia
+    const tipoArrimo = document.querySelector(`input[name="tipo-dependente"]:checked`) ? document.querySelector(`input[name="tipo-dependente"]:checked`).value : "";
+    const nomeArrimo = document.querySelector(`#nome-${tipoArrimo}`) ? document.querySelector(`#nome-${tipoArrimo}`).value : "";
   
     //conteudo do requerimento de isençao de taxa e multa
-    const numeroDependentes = document.querySelector("#input-numero-dependentes").value;
-    const salario = document.querySelector("#input-salario").value;
-    const radioTipoCasa = document.querySelector(".radio-tipo-casa:checked")?.value;
-    const inputValorAluguel = document.querySelector(".input-valor-aluguel").value;
+    const numeroDependentes = document.querySelector("#input-numero-dependentes").value || "";
+    const radioTipoCasa = document.querySelector(".radio-tipo-casa:checked")?.value || "";
+    const inputValorAluguel = document.querySelector(".input-valor-aluguel").value || "";
+    valorSiglaDoc = document.querySelector(`input[name="tipo-documento-foto"]:checked`).value || "";
+    alert(valorSiglaDoc)
     let casa;
     if (radioTipoCasa == "alugada") {
         casa = `Casa: ()Própria (X)Alugada - Aluguel: R$ ${inputValorAluguel}`;
@@ -171,7 +194,7 @@ button.addEventListener("click", async (event) => {
     else {
         casa = "Casa: (X)Própria ()Alugada";
     }
-    const artigos = document.querySelectorAll(`input[name="artigos[]"]:checked`);
+    const artigos = document.querySelectorAll(`input[name="artigos[]"]:checked`) || "";
     const arrayArtigos = Array.from(artigos).map(art => art.value);
     let listaArtigos;
     if (arrayArtigos.length == 1) {
@@ -187,69 +210,76 @@ button.addEventListener("click", async (event) => {
         valorTotal = valorTotal + todosArtigos[element];
     });
     valorTotal = valorTotal.toFixed(2);
-    let valorExtenso = "";
-    valorExtenso = extenso(valorTotal.replace(".", ","), { mode: "currency" });
+    let valorExtensoArtigos = "";
+    valorExtensoArtigos = extenso(valorTotal.replace(".", ","), { mode: "currency" });
     alert("o valor total e: " + valorTotal);
 
     //conteudo do requerimento de retificacao de dados cadastrais
-    const tipoCertidaoRetificacao = document.querySelector(`input[name="tipo-certidao-retificacao"]:checked`);
-
+    const tipoCertidaoRetificacao = document.querySelector(`input[name="tipo-certidao-retificacao"]:checked`) || "";
     const tipoDocumentoRetificacao = tipoCertidaoRetificacao ? dicionarioDocs[tipoCertidaoRetificacao.value] : "";
-    const novoNome = document.querySelectorAll(`input[name="texto-nome-retificado[]"]`);
+    const novoNome = document.querySelectorAll(`input[name="texto-nome-retificado[]"]`) || "";
     const listaNovoNome = Array.from(novoNome).map(nome => nome.value.trim()).filter(valor => valor !== "");
 
-    const quemMudouNome = document.querySelectorAll(`input[name="mudou-nome[]"]:checked`);
+    const quemMudouNome = document.querySelectorAll(`input[name="mudou-nome[]"]:checked`) || "";
     const listaQuemMudouNome = Array.from(quemMudouNome).map(quemMudou => quemMudou.value);
-    const paresQuemMudou = listaQuemMudouNome.map((valor, indice) => [valor, listaNovoNome[indice]]);
+    const paresQuemMudou = listaQuemMudouNome.map((element, index) => [element, listaNovoNome[index]]);
     /*console.dir(listaNovoNome);
     alert(listaQuemMudouNome);
     alert(paresQuemMudou);
     alert(tipoDocumentoRetificacao);*/
-  
+    
+    function criarParagrafo(arrayFrases){
+        const comprovanteResidencia = arrayFrases.splice(arrayFrases.indexOf(dicionarioDocs["comprovante-residencia"]), 1);
+        arrayFrases.splice(arrayFrases.length, 0, comprovanteResidencia);
+        comecoFrase = arrayFrases.slice(0, -1).join(", ");
+        ultimoItem = arrayFrases.at(-1)
+        listaDocs = `${comecoFrase} e ${ultimoItem}`;
+    }
+
     switch (opcao) {
         case "vazio":
             alert("Por favor, selecione uma opção válida");
             break;
         case "arrimo":
             alert("Arrimo de Família");
+            criarParagrafo(arrayDocs);
             break;
         case "isencao-servico":
             alert("Isenção do Serviço Militar");
+            criarParagrafo(arrayDocs);
             break;
         case "isencao-txmt":
             alert("Isenção de Taxas e Multas");
-            const itemRemovido = arrayDocs.splice(arrayDocs.indexOf("Ficha socioeconômica para isenção de taxas e multas"), 1);
-            arrayDocs.splice(0, 0, itemRemovido);
-            comecoFrase = arrayDocs.slice(0, -1).join(", ");
-            ultimoItem = arrayDocs.at(-1)
-            listaDocs = `${comecoFrase} e ${ultimoItem}`;
+            const fichaSocioeconomica = arrayDocs.splice(arrayDocs.indexOf(dicionarioDocs["ficha-socioeconomica"]), 1);
+            const gru225 = arrayDocs.slice(arrayDocs.indexOf(dicionarioDocs["gru-art-225-rlsm"]));
+            arrayDocs.splice(0, 0, fichaSocioeconomica);
+            criarParagrafo(arrayDocs);
             break;
         case "maior-30":
             alert("Maior de 30 anos");
+            criarParagrafo(arrayDocs);
             break;
         case "retificacao-dados-cadastrais":
             alert("Retificação de dados cadastrais");
-            break;
-        default:
-            comecoFrase = arrayDocs.slice(0, -1).join(", ");
-            ultimoItem = arrayDocs.at(-1)
-            listaDocs = `${comecoFrase} e ${ultimoItem}`;
+            criarParagrafo(arrayDocs);
             break;
     }
 
     alert("array dos docs: " + arrayDocs);
-    lerArquivo(opcao, listaDocs, tipoArrimo, numeroDependentes, ocupacao.value, salario, casa, listaArtigos, valorTotal, valorExtenso, tipoDocumentoRetificacao, paresQuemMudou);
+    await lerArquivo(opcao, listaDocs, tipoArrimo, nomeArrimo, numeroDependentes, ocupacao.value, salario, salarioExtenso, casa, listaArtigos, valorTotal, valorExtensoArtigos, tipoDocumentoRetificacao, paresQuemMudou);
     //window.location.reload();
-    async function lerArquivo(opcao, listaDocs, tipoArrimo, numeroDependentes, ocupacao, salario, casa, listaArtigos, valorTotal, valorExtenso, tipoDocumentoRetificacao, paresQuemMudou) {
+    async function lerArquivo(opcao, listaDocs, tipoArrimo, nomeArrimo, numeroDependentes, ocupacao, salario, salarioExtenso, casa, listaArtigos, valorTotal, valorExtensoArtigos, tipoDocumentoRetificacao, paresQuemMudou) {
+    alert(`Estamos dentro da funcao "lerAquivo" agora`);
         try {
             let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
             chrome.scripting.executeScript({
                 target: { tabId: tab.id },
-                args: [opcao, listaDocs, tipoArrimo, numeroDependentes, ocupacao, salario, casa, listaArtigos, valorTotal, valorExtenso, tipoDocumentoRetificacao, paresQuemMudou],
-                func: async (opcao, listaDocs, tipoArrimo, numeroDependentes, ocupacao, salario, casa, listaArtigos, valorTotal, valorExtenso, tipoDocumentoRetificacao, paresQuemMudou) => {
-                    const nomeSermilAlistado = document.querySelector(".data-table").rows[0].cells[1].innerText;
-                    const nomeSermilMae = document.querySelector(".data-table").rows[1].cells[1].innerText;
-                    const nomeSermilPai = document.querySelector(".data-table").rows[3].cells[1].innerText;
+                args: [opcao, listaDocs, tipoArrimo, nomeArrimo, numeroDependentes, ocupacao, salario, salarioExtenso, casa, listaArtigos, valorTotal, valorExtensoArtigos, tipoDocumentoRetificacao, paresQuemMudou],
+                func: async (opcao, listaDocs, tipoArrimo, nomeArrimo, numeroDependentes, ocupacao, salario, salarioExtenso, casa, listaArtigos, valorTotal, valorExtensoArtigos, tipoDocumentoRetificacao, paresQuemMudou) => {
+                    const linhaTabela = document.querySelectorAll(".data-table tr") || "";
+                    const nomeSermilAlistado = linhaTabela[0].cells[1].innerText || "";
+                    const nomeSermilMae = linhaTabela[1].cells[1].innerText || "";
+                    const nomeSermilPai = linhaTabela[3].cells[1].innerText || "";
 
                     const data = new Date();
                     const dia = String(data.getDate()).padStart(2, "0");
@@ -300,9 +330,18 @@ button.addEventListener("click", async (event) => {
                         "SE": "Sergipe",
                         "TO": "Tocantins"
                     };
-                    const localNascimento = document.querySelector(".data-table")?.rows[4]?.cells[1]?.innerText?.split(" - ");
+                    const localNascimento = document.querySelector(".data-table")?.rows[4]?.cells[1]?.innerText?.split(" - ") || "";
 
-                    conectivos = ["da", "de", "do", "e"];
+                    const conectivos = ["da", "de", "do", "e"];
+                    function capitalizar(texto){
+                        return texto.split(" ").map(palavra => {
+                            if (conectivos.includes(palavra.toLowerCase())) {
+                                return palavra.toLowerCase();
+                            }
+                            return palavra.charAt(0).toUpperCase() + palavra.slice(1).toLowerCase();
+                        }).join(" ");
+                    }
+                    
                     const dicionario = {
                         "DATAATUAL": dataAtual,
                         get "NOMECIDADAO"(){
@@ -320,35 +359,35 @@ button.addEventListener("click", async (event) => {
                             }
                         },
                         get "CPFCIDADAO"() {
-                            let cpf = document.querySelector(".data-table").rows[10].cells[1].innerText;
+                            let cpf = linhaTabela[10].cells[1].innerText || "";
                             cpf = cpf.replace(/(\d{3})(\d)/, "$1.$2");
                             cpf = cpf.replace(/(\d{3})(\d)/, "$1.$2");
                             cpf = cpf.replace(/(\d{3})(\d{1,2})/, "$1-$2");
                             return "CPF: " + cpf;
                         },
                         get "PAICIDADAO"(){
-                            let novoNome = "";
+                            let novoNome = nomeSermilPai;
                             if(opcao == "retificacao-dados-cadastrais"){
                                 paresQuemMudou.forEach(([chave, valor]) => {
                                     if(chave == "pai"){
                                         novoNome = capitalizar(valor);
                                     }
                                 });
-                                return novoNome;
+                                return capitalizar(novoNome);
                             }
                             else{
                                 return capitalizar(nomeSermilPai);
                             }
                         },
                         get "MAECIDADAO"(){
-                            let novoNome = "";
+                            let novoNome = nomeSermilMae;
                             if(opcao == "retificacao-dados-cadastrais"){
                                 paresQuemMudou.forEach(([chave, valor]) => {
                                     if(chave == "mae"){
                                         novoNome = capitalizar(valor);
                                     }
                                 });
-                                return novoNome;
+                                return capitalizar(novoNome);
                             }
                             else{
                                 return capitalizar(nomeSermilMae);
@@ -358,54 +397,55 @@ button.addEventListener("click", async (event) => {
                         "MESN": mes[dataNascimento[1] - 1],
                         "ANON": dataNascimento[2],
                         "CIDADEN": localNascimento[0] = localNascimento[0].charAt(0).toUpperCase() + localNascimento[0].slice(1).toLowerCase(),
-                        "ESTADON": estados[localNascimento[1]],
-                        "ENDERECO": capitalizar(document.querySelector(".data-table").rows[12].cells[1].innerText),
-                        "BAIRRO": capitalizar(document.querySelector(".data-table").rows[13].cells[1].innerText),
-                        "MUNICIPIO": document.querySelector(".data-table").rows[16].cells[1].innerText,
+                        /*10*/"ESTADON": estados[localNascimento[1]],
+                        "ENDERECO": capitalizar(linhaTabela[12].cells[1].innerText || ""),
+                        "BAIRRO": capitalizar(linhaTabela[13].cells[1].innerText || ""),
+                        "MUNICIPIO": linhaTabela[16].cells[1].innerText || "",
                         get "CEP"() {
-                            let cep = document.querySelector(".data-table").rows[15].cells[1].innerText;
+                            let cep = linhaTabela[15].cells[1].innerText || "";
                             cep = cep.replace(/(\d{2})(\d)/, "$1.$2");
                             cep = cep.replace(/(\d{3})(\d{1,2})/, "$1-$2");
                             return "CEP: " + cep;
                         },
                         "LISTADOCUMENTOS": listaDocs,
-                        "RACIDADAO": "RA " + document.querySelector(".header-bar").innerText.slice(0, 12),
+                        "RACIDADAO": "RA " + document.querySelector(".header-bar").innerText.slice(0, 12) || "",
                         get "NOMEARRIMO"(){
                             if(tipoArrimo == "mae"){
                                 return `${this["MAECIDADAO"]}`;
                             }
                             else{
-                                return `nome generico`;
+                                return `${nomeArrimo}`;
                             }
                         },
-                        "TIPOARRIMO" : tipoArrimo,
-                        "NOMETRABALHO": "",
-                        "CIDADEALISTAMENTO": document.querySelector(".jsm-vinculo").innerText,
-                        "DATAALISTAMENTO": document.querySelector(".alistamento-tipo").innerText,
-                        "ESCOLARIDADE": "escolaridade: " + document.querySelector(".data-table").rows[8].cells[1].innerText,
-                        "ESTADOCIVIL": "estado civil: " + document.querySelector(".data-table").rows[7].cells[1].innerText,
+                        "TIPOARRIMO" : tipoArrimo == "filho" ? tipoArrimo + "(a)" : tipoArrimo,
+                        "NOMETRABALHO": ocupacao,
+                        /*20*/"SALEXTENSO": salarioExtenso,
+                        "CIDADEALISTAMENTO": document.querySelector(".jsm-vinculo").innerText || "",
+                        "DATAALISTAMENTO": document.querySelector(".alistamento-tipo").innerText || "",
+                        "ESCOLARIDADE": "escolaridade: " + linhaTabela[8].cells[1].innerText || "",
+                        "ESTADOCIVIL": "estado civil: " + linhaTabela[7].cells[1].innerText || "",
                         "NDEPENDENTES": "Nº de dependentes: " + numeroDependentes,
                         "OCUPACAO": "ocupação: " + ocupacao,
-                        "SALARIO": "salário: R$ " + salario,
+                        "SALARIO": salario,
                         "CASA": casa,
                         "ARTIGOS": listaArtigos,
-                        "VALORARTIGOS": valorTotal.replace(".", ","),
-                        "VALOREXTENSO": valorExtenso,
+                        /*30*/"VALORART": valorTotal.replace(".", ","),
+                        "ARTEXTENSO": valorExtensoArtigos,
                         "TIPODOCUMENTO": tipoDocumentoRetificacao,
                         get "TIPOPESSOA"(){
                             let textoQuemMudouNome = "";
-                            paresQuemMudou.forEach(([chave, valor], indice) => {
+                            paresQuemMudou.forEach(([chave, valor], index) => {
                                 if(chave == "alistado"){
-                                    textoQuemMudouNome += "o próprio nome de " + capitalizar(nomeSermilAlistado) + " para " + valor;
+                                    textoQuemMudouNome += "o seu nome de " + capitalizar(nomeSermilAlistado) + " para " + capitalizar(valor);
                                 }
                                 else if(chave == "mae"){
-                                    textoQuemMudouNome += "o nome da mae de " + capitalizar(nomeSermilMae) + " para " + valor;
+                                    textoQuemMudouNome += "o nome da mae de " + capitalizar(nomeSermilMae) + " para " + capitalizar(valor);
                                 }
                                 else if(chave == "pai"){
-                                    textoQuemMudouNome += "o nome do pai de " + capitalizar(nomeSermilPai) + " para " + valor;
+                                    textoQuemMudouNome += "o nome do pai de " + capitalizar(nomeSermilPai) + " para " + capitalizar(valor);
                                 }
                                 
-                                if(indice == (paresQuemMudou.length-2)){
+                                if(index == (paresQuemMudou.length-2)){
                                     textoQuemMudouNome += " e "
                                 }
                                 else{
@@ -415,15 +455,6 @@ button.addEventListener("click", async (event) => {
                             return textoQuemMudouNome;
                         },
                     };
-
-                    function capitalizar(texto){
-                        return texto.split(" ").map(palavra => {
-                            if (conectivos.includes(palavra.toLowerCase())) {
-                                return palavra.toLowerCase();
-                            }
-                            return palavra.charAt(0).toUpperCase() + palavra.slice(1).toLowerCase();
-                        }).join(" ");
-                    }
 
                     return dicionario;
                 }
@@ -448,6 +479,10 @@ button.addEventListener("click", async (event) => {
 
                     if (caminhos) {
                         //Transforma a lista de caminhos em uma lista de promessas de fetch
+                        if(listaDocs.includes(dicionarioDocs["carteira-trabalho"])){
+                            caminhos.splice(2,1);
+                        }
+                        alert("array:\n" + caminhos);
                         const requisicoes = caminhos.map(caminho => fetch(caminho).then(res => res.text()));
                         //Aguarda todos os arquivos serem baixados
                         textosBrutos = await Promise.all(requisicoes);
@@ -465,7 +500,7 @@ button.addEventListener("click", async (event) => {
                         textoCopiado = match[1].trim();
                     }
                     corpoDocumentoHTML = corpoDocumentoHTML.replace(/TEXTOCOPIADO/g, textoCopiado);
-
+                    alert("ACABA AQUI ANTES DE ABRIR OUTRA GUIA: \n");
                     chrome.tabs.create({
                         url: chrome.runtime.getURL("popup/imprimir.html"),
                         active: true

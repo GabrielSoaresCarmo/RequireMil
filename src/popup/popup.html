@@ -29,10 +29,27 @@
                     <input class="certidao-alistado" type="checkbox" name="tipo-certidao-alistado" value="certidao-casamento" disabled>
                     <span>Certidão de casamento</span>
                 </label>
-                <label class="">
-                    <input type="checkbox" name="documentos[]" value="documento-foto" checked disabled>
-                    <span>Documento com foto</span>
-                </label>
+                <div class="flex flex-row gap-2">
+                    <label>
+                        <input type="checkbox" name="documentos[]" value="documento-foto" checked disabled>
+                        <span>Documento com foto</span>
+                    </label>
+                        <label class="sigla-doc">
+                            <span>Sigla do documento: </span>
+                            <label>
+                                <input type="radio" name="tipo-documento-foto" value="CIN">
+                                <span>CIN</span>
+                            </label>
+                            <label>
+                                <input type="radio" name="tipo-documento-foto" value="CNH">
+                                <span>CNH</span>
+                            </label>
+                            <label>
+                                <input type="radio" name="tipo-documento-foto" value="RG">
+                                <span>RG</span>
+                            </label>
+                        </label>
+                </div>
                 <label class="">
                     <input type="checkbox" name="documentos[]" value="comprovante-residencia" checked disabled>
                     <span>Comprovante de residência</span>
@@ -52,12 +69,38 @@
                     <div id="dependente">
                         <p>Quem vai ser o(a) dependente?</p>
                         <label>
+                            <input type="radio" name="tipo-dependente" value="conjuge" disabled>
+                            <span>Conjuge</span>
+                        </label>
+                        <label>
+                            <input type="radio" name="tipo-dependente" value="filho" disabled>
+                            <span>Filho(a)</span>
+                        </label>
+                        <label>
                             <input type="radio" name="tipo-dependente" value="mae" disabled>
                             <span>Mãe</span>
                         </label>
+                    </div>
+                    <div class="tipo-dependente hidden" name="docs-conjuge" disabled>
+                        <p>Digite o nome do(a) conjuge</p>
                         <label>
-                            <input type="radio" name="tipo-dependente" value="filho(a)" disabled>
-                            <span>Filho(a)</span>
+                            <span>Nome: </span>
+                            <input id="nome-conjuge" type="text" class="border rounded" disabled>
+                        </label>
+                    </div>
+                    <div class="tipo-dependente hidden" name="docs-filho" disabled>
+                        <p>Escolha os documentos do(a) filho(a) </p>
+                        <label>
+                            <input type="checkbox" name="documentos[]" value="certidao-nascimento-filho" disabled>
+                            <span>Certidão de nascimento</span>
+                        </label>
+                        <label>
+                            <input type="checkbox" name="documentos[]" value="documento-foto-filho" disabled>
+                            <span>Documento com foto</span>
+                        </label>
+                        <label>
+                            <span>Nome: </span>
+                            <input id="nome-filho" type="text" class="border rounded" disabled>
                         </label>
                     </div>
                     <div class="tipo-dependente hidden" name="docs-mae" disabled>
@@ -72,17 +115,6 @@
                         </label><br>
                         <label>
                             <input type="checkbox" name="documentos[]" value="documento-foto-mae" disabled>
-                            <span>Documento com foto</span>
-                        </label>
-                    </div>
-                    <div class="tipo-dependente hidden" name="docs-filho(a)" disabled>
-                        <p>Escolha os documentos do(a) filho(a) </p>
-                        <label>
-                            <input type="checkbox" name="documentos[]" value="certidao-nascimento-filho" disabled>
-                            <span>Certidão de nascimento</span>
-                        </label>
-                        <label>
-                            <input type="checkbox" name="documentos[]" value="documento-foto-filho" disabled>
                             <span>Documento com foto</span>
                         </label>
                     </div>
@@ -118,7 +150,7 @@
                             <span>Ocupação: </span>
                             <input type="text" id="input-ocupacao" class="border-1 rounded uppercase w-50">
                         </label>
-                        <label>
+                        <label id="salario">
                             <span>Sálario: </span>
                             <input type="text" id="input-salario" class="border-1 rounded" placeholder="R$ 00,00">
                         </label>
@@ -137,7 +169,6 @@
                                 <input type="text" class="input-valor-aluguel border-1 rounded" placeholder="R$ 00,00" disabled>
                             </label>
                         </div>
-
                         <div id="lista-artigos-usados">
                             <p class="mx-auto text-center">Lista dos artigos isentados</p>
                             <div class="grid grid-cols-5 gap-2 p-2">
@@ -153,10 +184,6 @@
                                     <input type="checkbox" name="artigos[]" value="60">
                                     <span>Art. 60</span>
                                 </label>
-                                <!--<label>
-                                    <input type="checkbox" name="artigos[]" value="225">
-                                    <span>Art. 225</span>
-                                </label>-->
                                 <label>
                                     <input type="checkbox" name="artigos[]" value="75">
                                     <span>Art. 75</span>
@@ -209,7 +236,6 @@
                                     <input type="checkbox" name="artigos[]" value="179/2">
                                     <span>Art. 179/2</span>
                                 </label>
-                                <span id="valor-total">R$ 1234,56</span>
                             </div>
                         </div>
                     </div>

@@ -4,7 +4,8 @@
     "description": "Criar requerimentos e seus documentos adicionais sem precisar digitar cada informação não tem preço, com um clique isso agora é possível",
     "version": "0.1",
     "manifest_version": 3,
-    "permissions": ["downloads", "activeTab", "scripting"],
+    "permissions": ["downloads", "activeTab", "scripting", "tabs"],
+    "host_permissions": ["https://sermilweb.eb.mil.br/*", "file:///*"],
     "action": {
         "default_popup": "./popup/popup.html"
     }
