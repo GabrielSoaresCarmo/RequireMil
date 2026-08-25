@@ -100,13 +100,8 @@ tipoRequerimento.addEventListener("change", async (event) => {
             target: { tabId: tab.id },
             args: [],
             func: () => {
-                const linhaTabela = document.querySelectorAll(".data-table tr") || "";
-                //if(linhaTabela[11].cells[0].innerText == "Ocupação"){
-                    return linhaTabela[10].cells[1].innerText == "Ocupação" && linhaTabela[11].cells[1].innerText ? linhaTabela[11].cells[1].innerText : "";
-                //}
-                //else{
-                //    return "";
-                //}
+                const linhaTabela = document.querySelectorAll(".table tr") || "";
+                return linhaTabela[11].cells[0].innerText == "Ocupação" && linhaTabela[11].cells[1].innerText ? linhaTabela[11].cells[1].innerText : "";
             }
         }, (selection) => {
             if (selection && selection[0]) {
@@ -266,6 +261,7 @@ button.addEventListener("click", async (event) => {
     }
 
     alert("array dos docs: " + arrayDocs);
+    alert("lista retificacao" + paresQuemMudou)
     await lerArquivo(opcao, listaDocs, tipoArrimo, nomeArrimo, numeroDependentes, ocupacao.value, salario, salarioExtenso, casa, listaArtigos, valorTotal, valorExtensoArtigos, tipoDocumentoRetificacao, paresQuemMudou);
     //window.location.reload();
     async function lerArquivo(opcao, listaDocs, tipoArrimo, nomeArrimo, numeroDependentes, ocupacao, salario, salarioExtenso, casa, listaArtigos, valorTotal, valorExtensoArtigos, tipoDocumentoRetificacao, paresQuemMudou) {
@@ -276,10 +272,46 @@ button.addEventListener("click", async (event) => {
                 target: { tabId: tab.id },
                 args: [opcao, listaDocs, tipoArrimo, nomeArrimo, numeroDependentes, ocupacao, salario, salarioExtenso, casa, listaArtigos, valorTotal, valorExtensoArtigos, tipoDocumentoRetificacao, paresQuemMudou],
                 func: async (opcao, listaDocs, tipoArrimo, nomeArrimo, numeroDependentes, ocupacao, salario, salarioExtenso, casa, listaArtigos, valorTotal, valorExtensoArtigos, tipoDocumentoRetificacao, paresQuemMudou) => {
-                    const linhaTabela = document.querySelectorAll(".data-table tr") || "";
-                    const nomeSermilAlistado = linhaTabela[0].cells[1].innerText || "";
-                    const nomeSermilMae = linhaTabela[1].cells[1].innerText || "";
-                    const nomeSermilPai = linhaTabela[3].cells[1].innerText || "";
+                    const informacaoAlistamento = document.querySelectorAll(".list-group-item") || "";
+                    const cidadeAlistamento = informacaoAlistamento[1].innerText;
+                    const dataAlistamento = informacaoAlistamento[2].innerText;
+                    const linhaTabela = document.querySelectorAll(".table tr") || "";
+                    const dadosSermil = {
+                        "Nome": "",
+                        "Nome da Mãe": "",
+                        "Data de Nascimento": "",
+                        "Nome do Pai": "",
+                        "Local de Nascimento": "",
+                        "País de Nascimento": "",
+                        "Sexo": "",
+                        "Estado Civil": "",
+                        "Escolaridade": "",
+                        "Identidade (RG)": "",
+                        "CPF": "",
+                        "Ocupação": "",
+                        "Endereço": "",
+                        "Bairro": "",
+                        "Zona Residencial": "",
+                        "CEP": "",
+                        "Município": "",
+                        "País": "",
+                        "E-mail": "",
+                        "Telefone": ""
+                    };
+                    
+                    Object.entries(linhaTabela).forEach(([key, value], index) => {
+                        const chave = linhaTabela[index].cells[0]?.innerText?.trim() || "";
+                        const valor = linhaTabela[index].cells[1]?.innerText?.trim() || "";
+                        if(valor){
+                            dadosSermil[chave] = valor;
+                        }
+                    });
+                    
+                    Object.entries(dadosSermil).forEach(([key, value], index) => {
+                        if(key != "Identidade (RG)" && key != "Ocupação" && key != "Zona Residencial" && key != "E-mail" && key != "Telefone" && dadosSermil[key] == ""){
+                            alert(`O campo ${key.toUpperCase()} não está preenchido (preenche lá Leo)`);
+                        }
+                    });
 
                     const data = new Date();
                     const dia = String(data.getDate()).padStart(2, "0");
@@ -299,7 +331,7 @@ button.addEventListener("click", async (event) => {
                     ];
                     const ano = data.getFullYear();
                     const dataAtual = dia + " de " + mes[data.getMonth()] + " de " + ano;
-                    const dataNascimento = document.querySelector(".data-table")?.rows[2]?.cells[1]?.innerText?.split("/") || ["01", "01", "2000"];
+                    const dataNascimento = linhaTabela[2]?.cells[1]?.innerText?.split("/") || "";
 
                     const estados = {
                         "AC": "Acre",
@@ -330,7 +362,8 @@ button.addEventListener("click", async (event) => {
                         "SE": "Sergipe",
                         "TO": "Tocantins"
                     };
-                    const localNascimento = document.querySelector(".data-table")?.rows[4]?.cells[1]?.innerText?.split(" - ") || "";
+                    const localNascimento = linhaTabela[4]?.cells[1]?.innerText?.split(" - ") || "";
+                    const cidadeN = localNascimento[0].charAt(0).toUpperCase() + localNascimento[0].slice(1).toLowerCase();
 
                     const conectivos = ["da", "de", "do", "e"];
                     function capitalizar(texto){
@@ -342,107 +375,79 @@ button.addEventListener("click", async (event) => {
                         }).join(" ");
                     }
                     
-                    const dicionario = {
-                        "DATAATUAL": dataAtual,
-                        get "NOMECIDADAO"(){
-                            let novoNome = "";
-                            if(opcao == "retificacao-dados-cadastrais"){
-                                paresQuemMudou.forEach(([chave, valor]) => {
-                                    if(chave == "alistado"){
-                                        novoNome = valor.toUpperCase();
-                                    }
-                                });
-                                return novoNome;
-                            }
-                            else{
-                                return nomeSermilAlistado;
-                            }
-                        },
-                        get "CPFCIDADAO"() {
-                            let cpf = linhaTabela[10].cells[1].innerText || "";
-                            cpf = cpf.replace(/(\d{3})(\d)/, "$1.$2");
-                            cpf = cpf.replace(/(\d{3})(\d)/, "$1.$2");
-                            cpf = cpf.replace(/(\d{3})(\d{1,2})/, "$1-$2");
-                            return "CPF: " + cpf;
-                        },
-                        get "PAICIDADAO"(){
-                            let novoNome = nomeSermilPai;
+                    const nomeCidadao = (() => {
+                        let novoNome = "";
+                        if(opcao == "retificacao-dados-cadastrais"){
+                            paresQuemMudou.forEach(([chave, valor]) => {
+                                if(chave == "alistado"){
+                                    novoNome = valor.toUpperCase();
+                                }
+                            });
+                            return novoNome;
+                        }
+                        else{
+                            return dadosSermil["Nome"];
+                        }
+                    })();
+
+                    const paiCidadao = (() => {
+                        let novoNome = dadosSermil["Nome do Pai"];
+                        if(dadosSermil["Nome do Pai"] == "NAO DECLARADO" || dadosSermil["Nome do Pai"] == ""){
+                            return "";
+                        }
+                        else{
                             if(opcao == "retificacao-dados-cadastrais"){
                                 paresQuemMudou.forEach(([chave, valor]) => {
                                     if(chave == "pai"){
-                                        novoNome = capitalizar(valor);
+                                        novoNome = valor;
                                     }
                                 });
-                                return capitalizar(novoNome);
+                                return " " + capitalizar(novoNome) + " e";
                             }
                             else{
-                                return capitalizar(nomeSermilPai);
+                                return " " + capitalizar(dadosSermil["Nome do Pai"]) + " e";
                             }
-                        },
-                        get "MAECIDADAO"(){
-                            let novoNome = nomeSermilMae;
-                            if(opcao == "retificacao-dados-cadastrais"){
-                                paresQuemMudou.forEach(([chave, valor]) => {
-                                    if(chave == "mae"){
-                                        novoNome = capitalizar(valor);
-                                    }
-                                });
-                                return capitalizar(novoNome);
-                            }
-                            else{
-                                return capitalizar(nomeSermilMae);
-                            }
-                        },
-                        "DIAN": dataNascimento[0],
-                        "MESN": mes[dataNascimento[1] - 1],
-                        "ANON": dataNascimento[2],
-                        "CIDADEN": localNascimento[0] = localNascimento[0].charAt(0).toUpperCase() + localNascimento[0].slice(1).toLowerCase(),
-                        /*10*/"ESTADON": estados[localNascimento[1]],
-                        "ENDERECO": capitalizar(linhaTabela[12].cells[1].innerText || ""),
-                        "BAIRRO": capitalizar(linhaTabela[13].cells[1].innerText || ""),
-                        "MUNICIPIO": linhaTabela[16].cells[1].innerText || "",
-                        get "CEP"() {
-                            let cep = linhaTabela[15].cells[1].innerText || "";
-                            cep = cep.replace(/(\d{2})(\d)/, "$1.$2");
-                            cep = cep.replace(/(\d{3})(\d{1,2})/, "$1-$2");
-                            return "CEP: " + cep;
-                        },
-                        "LISTADOCUMENTOS": listaDocs,
-                        "RACIDADAO": "RA " + document.querySelector(".header-bar").innerText.slice(0, 12) || "",
-                        get "NOMEARRIMO"(){
-                            if(tipoArrimo == "mae"){
-                                return `${this["MAECIDADAO"]}`;
-                            }
-                            else{
-                                return `${nomeArrimo}`;
-                            }
-                        },
-                        "TIPOARRIMO" : tipoArrimo == "filho" ? tipoArrimo + "(a)" : tipoArrimo,
-                        "NOMETRABALHO": ocupacao,
-                        /*20*/"SALEXTENSO": salarioExtenso,
-                        "CIDADEALISTAMENTO": document.querySelector(".jsm-vinculo").innerText || "",
-                        "DATAALISTAMENTO": document.querySelector(".alistamento-tipo").innerText || "",
-                        "ESCOLARIDADE": "escolaridade: " + linhaTabela[8].cells[1].innerText || "",
-                        "ESTADOCIVIL": "estado civil: " + linhaTabela[7].cells[1].innerText || "",
-                        "NDEPENDENTES": "Nº de dependentes: " + numeroDependentes,
-                        "OCUPACAO": "ocupação: " + ocupacao,
-                        "SALARIO": salario,
-                        "CASA": casa,
-                        "ARTIGOS": listaArtigos,
-                        /*30*/"VALORART": valorTotal.replace(".", ","),
-                        "ARTEXTENSO": valorExtensoArtigos,
-                        "TIPODOCUMENTO": tipoDocumentoRetificacao,
-                        get "TIPOPESSOA"(){
-                            let textoQuemMudouNome = "";
+                        }
+                    })();
+
+                    const maeCidadao = (() => {
+                        let novoNome = dadosSermil["Nome da Mãe"];
+                        if(opcao == "retificacao-dados-cadastrais"){
+                            paresQuemMudou.forEach(([chave, valor]) => {
+                                if(chave == "mae"){
+                                    novoNome = valor;
+                                }
+                            });
+                            return capitalizar(novoNome);
+                        }
+                        else{
+                            return capitalizar(dadosSermil["Nome da Mãe"]);
+                        }
+                    })();
+
+                    const cpfCidadao = dadosSermil["CPF"].replace(/(\d{3})(\d{3})(\d{3})(\d{1,2})/, "$1.$2.$3-$4");
+                    const cepCidade = dadosSermil["CEP"].replace(/(\d{2})(\d{3})(\d{1,2})/, "$1.$2-$3");
+
+                    const arrimo = (() => {
+                        if(tipoArrimo == "mae"){
+                            return maeCidadao;
+                        }
+                        else{
+                            return nomeArrimo;
+                        }
+                    })();
+
+                    const tipoPessoa = (() => {
+                        let textoQuemMudouNome = "";
                             paresQuemMudou.forEach(([chave, valor], index) => {
                                 if(chave == "alistado"){
-                                    textoQuemMudouNome += "o seu nome de " + capitalizar(nomeSermilAlistado) + " para " + capitalizar(valor);
+                                    textoQuemMudouNome += "o seu nome de " + capitalizar(dadosSermil["Nome"]) + " para " + capitalizar(valor);
                                 }
                                 else if(chave == "mae"){
-                                    textoQuemMudouNome += "o nome da mae de " + capitalizar(nomeSermilMae) + " para " + capitalizar(valor);
+                                    textoQuemMudouNome += "o nome da mae de " + capitalizar(dadosSermil["Nome da Mãe"]) + " para " + capitalizar(valor);
                                 }
                                 else if(chave == "pai"){
-                                    textoQuemMudouNome += "o nome do pai de " + capitalizar(nomeSermilPai) + " para " + capitalizar(valor);
+                                    textoQuemMudouNome += "o nome do pai de " + capitalizar(dadosSermil["Nome do Pai"]) + " para " + capitalizar(valor);
                                 }
                                 
                                 if(index == (paresQuemMudou.length-2)){
@@ -452,8 +457,43 @@ button.addEventListener("click", async (event) => {
                                     textoQuemMudouNome += ", "
                                 }
                             });
-                            return textoQuemMudouNome;
-                        },
+                        return textoQuemMudouNome;
+                    })();
+
+                    const dicionario = {
+                        "DATAATUAL": dataAtual,
+                        "NOMECIDADAO" : nomeCidadao,
+                        "CPFCIDADAO" : "CPF: " + cpfCidadao,
+                        "PAICIDADAO" : paiCidadao,
+                        "MAECIDADAO" : maeCidadao,
+                        "DIAN": dataNascimento[0],
+                        "MESN": mes[dataNascimento[1] - 1],
+                        "ANON": dataNascimento[2],
+                        "CIDADEN": cidadeN,
+                  /*10*/"ESTADON": estados[localNascimento[1]],
+                        "ENDERECO": capitalizar(dadosSermil["Endereço"]),
+                        "BAIRRO": capitalizar(dadosSermil["Bairro"]),
+                        "MUNICIPIO": dadosSermil["Município"],
+                        "CEP" : "CEP: " + cepCidade,
+                        "LISTADOCUMENTOS": listaDocs,
+                        "RACIDADAO": "RA " + document.querySelector(".card-header").innerText.slice(0, 12) || "",
+                        "NOMEARRIMO" : arrimo,
+                        "TIPOARRIMO" : tipoArrimo == "filho" ? tipoArrimo + "(a)" : tipoArrimo,
+                        "NOMETRABALHO": ocupacao,
+                  /*20*/"SALEXTENSO": salarioExtenso,
+                        "CIDADEALISTAMENTO": cidadeAlistamento,
+                        "DATAALISTAMENTO": dataAlistamento,
+                        "ESCOLARIDADE": "escolaridade: " + dadosSermil["Escolaridade"],
+                        "ESTADOCIVIL": "estado civil: " + dadosSermil["Estado Civil"],
+                        "NDEPENDENTES": "Nº de dependentes: " + numeroDependentes,
+                        "OCUPACAO": "ocupação: " + ocupacao,
+                        "SALARIO": salario,
+                        "CASA": casa,
+                        "ARTIGOS": listaArtigos,
+                  /*30*/"VALORART": valorTotal.replace(".", ","),
+                        "ARTEXTENSO": valorExtensoArtigos,
+                        "TIPODOCUMENTO": tipoDocumentoRetificacao,
+                        "TIPOPESSOA" : tipoPessoa,
                     };
 
                     return dicionario;
@@ -493,13 +533,16 @@ button.addEventListener("click", async (event) => {
                         texto = texto.replace(regex, (match) => selection[0].result[match]);
                         return `<pre>${texto}</pre>`
                     }).join(`<div class="quebra-pagina"></div>`);
-                    let textoCopiado = "";
+                    let textoCopiado = "nao esta copiando";
                     const regexTextoCopiado = /1\.\s*([\s\S]*?CEP:\s*\d{2}\.?\d{3}-\d{3})/i;
                     const match = corpoDocumentoHTML.match(regexTextoCopiado);
                     if(match){
                         textoCopiado = match[1].trim();
                     }
                     corpoDocumentoHTML = corpoDocumentoHTML.replace(/TEXTOCOPIADO/g, textoCopiado);
+                    alert(regexTextoCopiado);
+                    alert(match);
+                    alert(corpoDocumentoHTML);
                     alert("ACABA AQUI ANTES DE ABRIR OUTRA GUIA: \n");
                     chrome.tabs.create({
                         url: chrome.runtime.getURL("popup/imprimir.html"),
