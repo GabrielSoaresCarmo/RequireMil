@@ -1,4 +1,41 @@
-const valorTaxaMinima = 6.69;
+const btnApagar = document.querySelector("#clear");
+btnApagar?.addEventListener("click", () =>{
+    localStorage.clear();
+});
+
+let valorTaxaMinima = 0;
+//const validaArmazenamentoLocal = localStorage.getItem("taxaMinima") || "";
+if(!localStorage.getItem("taxaMinima")){
+    valorTaxaMinima = parseFloat(prompt("BEM VINDO(A), COMO É SEU PRIMEIRO ACESSO INFORME O VALOR ATUAL DA TAXA MÍNIMA!").replace(",", "."));
+    localStorage.setItem("taxaMinima", valorTaxaMinima);
+}
+else{
+    valorTaxaMinima = localStorage.getItem("taxaMinima");
+}
+
+const spanValorTaxaMinima = document.querySelector("#valor-taxa-minima");
+const btnEditarTaxaMinima = document.querySelector("#editar-taxa-minima");
+//spanValorTaxaMinima.innerText = valorTaxaMinima;
+
+if(spanValorTaxaMinima){
+    spanValorTaxaMinima.innerText = valorTaxaMinima;
+}
+
+btnEditarTaxaMinima?.addEventListener("click", () => {
+    //valorTaxaMinima = prompt("Digite o novo valor da Taxa Mínima:");
+    const novoValor = prompt("Digite o novo valor da Taxa Mínima:", valorTaxaMinima);
+
+    if(novoValor != null && novoValor.trim() != ""){
+        localStorage.setItem("taxaMinima", novoValor.replace(",", "."));
+        valorTaxaMinima = localStorage.getItem("taxaMinima");
+    }
+    else{
+        alert("Novo valor não inserido");
+    }
+
+    spanValorTaxaMinima.innerText = valorTaxaMinima;
+});
+
 const todosArtigos = {
     "47": valorTaxaMinima * 5,
     "52": valorTaxaMinima * 5,
@@ -29,11 +66,12 @@ const ocupacao = document.querySelector("#input-ocupacao") || "";
 const divCarteira = document.querySelector("#carteira") || "";
 const labelSalario = document.querySelector("#salario") || "";
 let valorSiglaDoc = "";
+const crnm = document.querySelector("#crnm") || "";
 const dicionarioDocs = {
     "certidao-nascimento": "Cópia da certidão de nascimento",
     "certidao-casamento": "Cópia da certidão de casamento",
     get "documento-foto"(){
-        valorSiglaDoc = document.querySelector(`input[name="tipo-documento-foto"]:checked`).value || "";
+        valorSiglaDoc = document.querySelector(`input[name="tipo-documento-foto"]:checked`)?.value || "";
         return `Cópia do documento com foto (${valorSiglaDoc})`;
     },
     "comprovante-residencia": "Cópia do comprovante de residência",
@@ -78,7 +116,9 @@ tipoRequerimento.addEventListener("change", async (event) => {
             if(tipoFieldset.id == "tipo-arrimo"){
                 labelSalario.querySelector("input").disabled = false;
                 divCarteira.insertAdjacentElement("beforeend", labelSalario);
-                alert("TIPO ARRIMO: ");
+            }
+            else if(tipoFieldset.id == "tipo-maior-30"){
+                crnm.classList.remove("hidden");
             }
         }
     }
@@ -88,12 +128,6 @@ tipoRequerimento.addEventListener("change", async (event) => {
         fieldsetPai.querySelectorAll("input").forEach(el => el.disabled = true);
     }
 
-    if (event.target.value != "arrimo") {
-        tipoCertidao[1].closest("label").classList.remove("hidden");
-    }
-    else {
-        tipoCertidao[1].closest("label").classList.add("hidden");
-    }
     try {
         let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
         chrome.scripting.executeScript({
@@ -160,7 +194,7 @@ button.addEventListener("click", async (event) => {
     let comecoFrase = "";
     let ultimoItem = "";
     let listaDocs = "";
-    const salario = document.querySelector("#input-salario").value || "";
+    const salario = document.querySelector("#input-salario")?.value || "";
     let salarioExtenso = salario ? extenso(salario, { mode: "currency" }) : "";
 
     //lista de documentos copiados anexos ao requerimento
@@ -172,9 +206,9 @@ button.addEventListener("click", async (event) => {
     `) || "";
     const arrayDocs = Array.from(valoresMarcados).map(doc => dicionarioDocs[doc.value]);
 
-    //cconteudo do requerimento de arrimo de familia
-    const tipoArrimo = document.querySelector(`input[name="tipo-dependente"]:checked`) ? document.querySelector(`input[name="tipo-dependente"]:checked`).value : "";
-    const nomeArrimo = document.querySelector(`#nome-${tipoArrimo}`) ? document.querySelector(`#nome-${tipoArrimo}`).value : "";
+    //conteudo do requerimento de arrimo de familia
+    const tipoArrimo = document.querySelector(`input[name="tipo-dependente"]:checked`)?.value || "";
+    const nomeArrimo = document.querySelector(`#nome-${tipoArrimo}`)?.value || "";
   
     //conteudo do requerimento de isençao de taxa e multa
     const numeroDependentes = document.querySelector("#input-numero-dependentes").value || "";
@@ -209,6 +243,9 @@ button.addEventListener("click", async (event) => {
     valorExtensoArtigos = extenso(valorTotal.replace(".", ","), { mode: "currency" });
     alert("o valor total e: " + valorTotal);
 
+    //conteudo do requerimento de maior de 30 anos
+    const nacionalidade = document.querySelector(`input[name="nacionalidade"]:checked`)?.value || "";
+
     //conteudo do requerimento de retificacao de dados cadastrais
     const tipoCertidaoRetificacao = document.querySelector(`input[name="tipo-certidao-retificacao"]:checked`) || "";
     const tipoDocumentoRetificacao = tipoCertidaoRetificacao ? dicionarioDocs[tipoCertidaoRetificacao.value] : "";
@@ -218,10 +255,6 @@ button.addEventListener("click", async (event) => {
     const quemMudouNome = document.querySelectorAll(`input[name="mudou-nome[]"]:checked`) || "";
     const listaQuemMudouNome = Array.from(quemMudouNome).map(quemMudou => quemMudou.value);
     const paresQuemMudou = listaQuemMudouNome.map((element, index) => [element, listaNovoNome[index]]);
-    /*console.dir(listaNovoNome);
-    alert(listaQuemMudouNome);
-    alert(paresQuemMudou);
-    alert(tipoDocumentoRetificacao);*/
     
     function criarParagrafo(arrayFrases){
         const comprovanteResidencia = arrayFrases.splice(arrayFrases.indexOf(dicionarioDocs["comprovante-residencia"]), 1);
@@ -237,6 +270,7 @@ button.addEventListener("click", async (event) => {
             break;
         case "arrimo":
             alert("Arrimo de Família");
+            arrayDocs.splice(2, 0, "Declaração de arrimo");
             criarParagrafo(arrayDocs);
             break;
         case "isencao-servico":
@@ -252,6 +286,9 @@ button.addEventListener("click", async (event) => {
             break;
         case "maior-30":
             alert("Maior de 30 anos");
+            if(nacionalidade == "estrangeiro"){
+                arrayDocs.splice(2, 0, "Cópia da portaria do Diário Oficial da União");
+            }
             criarParagrafo(arrayDocs);
             break;
         case "retificacao-dados-cadastrais":
@@ -260,10 +297,7 @@ button.addEventListener("click", async (event) => {
             break;
     }
 
-    alert("array dos docs: " + arrayDocs);
-    alert("lista retificacao" + paresQuemMudou)
     await lerArquivo(opcao, listaDocs, tipoArrimo, nomeArrimo, numeroDependentes, ocupacao.value, salario, salarioExtenso, casa, listaArtigos, valorTotal, valorExtensoArtigos, tipoDocumentoRetificacao, paresQuemMudou);
-    //window.location.reload();
     async function lerArquivo(opcao, listaDocs, tipoArrimo, nomeArrimo, numeroDependentes, ocupacao, salario, salarioExtenso, casa, listaArtigos, valorTotal, valorExtensoArtigos, tipoDocumentoRetificacao, paresQuemMudou) {
     alert(`Estamos dentro da funcao "lerAquivo" agora`);
         try {
@@ -540,9 +574,6 @@ button.addEventListener("click", async (event) => {
                         textoCopiado = match[1].trim();
                     }
                     corpoDocumentoHTML = corpoDocumentoHTML.replace(/TEXTOCOPIADO/g, textoCopiado);
-                    alert(regexTextoCopiado);
-                    alert(match);
-                    alert(corpoDocumentoHTML);
                     alert("ACABA AQUI ANTES DE ABRIR OUTRA GUIA: \n");
                     chrome.tabs.create({
                         url: chrome.runtime.getURL("popup/imprimir.html"),

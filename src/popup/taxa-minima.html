@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taxa Minima</title>
+    <link rel="stylesheet" href="./popup.css">
+</head>
+<body class="w-120 h-96">
+    <img src="../assets/requiremil.png" alt="Sumiu - REQUIREMIL" class="w-screen h-24">
+    <h1 class="my-4 font-bold text-center text-3xl">Taxa Mínima</h1>
+    <div class="border flex flex-col items-center">
+        <div class="max-w-md mx-auto p-6 bg-slate-100 shadow rounded my-4">
+            <label>
+                <span id="id-taxa-minima">Valor atual: </span>
+                <span id="valor-taxa-minima"></span>
+            </label>
+        </div>
+        <div class="border flex-row gap-6 items-center">
+            <button class="bg-blue-500 w-fit hover:bg-blue-900 rounded-lg font-bold py-1 transition text-white cursor-pointer p-2"><a href="popup.html">Voltar</a></button>
+            <button id="editar-taxa-minima" class="bg-blue-500 w-fit hover:bg-blue-900 rounded-lg font-bold py-1 transition text-white cursor-pointer p-2">Editar</button>
+            <button id="clear" class="bg-blue-500 w-fit hover:bg-blue-900 rounded-lg font-bold py-1 transition text-white cursor-pointer p-2">Apagar</button>
+        </div>
+        <script src="popup.js" defer></script>
+    </div>
+</body>
+</html>
