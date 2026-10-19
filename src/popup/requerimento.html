@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="./popup.css">
 </head>
     <body class="max-w-xl min-w-120">
-        <img src="../assets/requiremil.png" alt="Sumiu - REQUIREMIL" class="w-screen h-24">
+        <img src="../assets/requireml.png" alt="Sumiu - REQUIREMIL" class="w-screen h-24">
         <form id="form-docs" class="max-w-md mx-auto p-6 bg-slate-100 shadow rounded flex flex-col gap-6 items-center my-4">
             <label class="border-1">
                 <span class="font-bold">Requerimento:</span>
@@ -18,6 +18,7 @@
                     <option value="isencao-txmt" class="text-center">Isenção de taxas e multas</option>
                     <option value="maior-30" class="text-center">Maior de 30 anos</option>
                     <option value="retificacao-dados-cadastrais" class="text-center">Retificação de dados cadastrais</option>
+                    <option value="segunda-via-reservista" class="text-center">Segunda via da reservista</option>
                 </select>
             </label>
             <fieldset id="copias-docs" class="flex flex-col items-start w-full hidden" disabled>
@@ -60,7 +61,7 @@
                     <span>Comprovante de residência</span>
                 </label>
                 <!--TIPO ARRIMO-->
-                <fieldset id="tipo-arrimo" class="border-1 flex flex-col hidden" name="tipo-arrimo" disabled>
+                <fieldset id="tipo-arrimo" class="border flex flex-col hidden" name="tipo-arrimo" disabled>
                     <div id="carteira" class="mt-2">
                         <p>O alistado está trabalhando de carteira assinada?</p>
                         <label>
@@ -127,7 +128,7 @@
                     </div>
                 </fieldset>
                 <!--TIPO ISENCAO SERVICO (NI)-->
-                <fieldset id="tipo-isencao-servico" class="border-1 hidden" disabled>
+                <fieldset id="tipo-isencao-servico" class="border hidden" disabled>
                     <div>
                         <label>
                             <input type="checkbox" name="documentos[]" value="atestado-medico" checked disabled>
@@ -136,7 +137,7 @@
                     </div>
                 </fieldset>
                 <!--TIPO ISENCAO TAXA E MULTA-->
-                <fieldset id="tipo-isencao-txmt" class="border-1 hidden" disabled>
+                <fieldset id="tipo-isencao-txmt" class="border hidden" disabled>
                     <div>
                         <label>
                             <input type="checkbox" name="documentos[]" value="ficha-socioeconomica" checked disabled>
@@ -264,7 +265,7 @@
                     </div>
                 </fieldset>
                 <!--TIPO RETIFICACAO DE DADOS CADASTRAIS-->
-                <fieldset id="tipo-retificacao-dados-cadastrais" class="border-1 hidden flex flex-col gap-2" disabled>
+                <fieldset id="tipo-retificacao-dados-cadastrais" class="border flex flex-col gap-2 hidden" disabled>
                     <div class="tipo-certidao-retificacao">
                         <label>
                             <input type="radio" name="tipo-certidao-retificacao" value="certificado-dispensa-incorporacao" disabled>
@@ -295,18 +296,126 @@
                         </label>
                     </div>
                     <div class="flex flex-col gap-2">
-                        <label class="flex gap-2 w-full hidden nome-novo" name="label-nome-alistado" disabled>
+                        <label class="flex gap-2 w-full hidden nome-novo" name="label-nome-alistado">
                             <span class="whitespace-nowrap">Digite o novo nome do alistado: </span>
-                            <input type="text" class="border rounded flex-1 uppercase p-1 " name="texto-nome-retificado[]" value="" disabled>
+                            <input type="text" class="border rounded flex-1 uppercase p-1" name="texto-nome-retificado[]" value="" disabled>
                         </label>
                         <label class="flex gap-2 w-full hidden nome-novo" name="label-nome-mae">
                             <span class="whitespace-nowrap">Digite o novo nome da mãe: </span>
-                            <input type="text" class="border rounded flex-1 uppercase p-1 " name="texto-nome-retificado[]" value="" disabled>
+                            <input type="text" class="border rounded flex-1 uppercase p-1" name="texto-nome-retificado[]" value="" disabled>
                         </label>
                         <label class="flex gap-2 w-full hidden nome-novo" name="label-nome-pai">
                             <span class="whitespace-nowrap">Digite o novo nome do pai: </span>
-                            <input type="text" class="border rounded flex-1 uppercase p-1 " name="texto-nome-retificado[]" value="" disabled>
+                            <input type="text" class="border rounded flex-1 uppercase p-1" name="texto-nome-retificado[]" value="" disabled>
                         </label>
+                    </div>
+                </fieldset>
+                <!--TIPO SEGUNDA VIA RESERVISTA-->
+                <fieldset id="tipo-segunda-via-reservista" class="border flex flex-col gap-2 w-full hidden" disabled>
+                    <div>
+                        <label>
+                            <input type="checkbox" name="documentos[]" value="boletim-ocorrencia" checked disabled>
+                            <span>Boletim de ocorrência</span>
+                        </label>
+                    </div>
+                    <div>
+                        <p>Qual desses o requerente tem?</p>
+                        <label>
+                            <input type="radio" name="documentos[]" value="informacoes-cadastrais">
+                            <span>Informações cadastrais</span>
+                        </label>
+                        <label>
+                            <input type="radio" name="documentos[]" value="ficha-modelo-e">
+                            <span>Ficha modelo-E</span>
+                        </label>
+                    </div>
+                    <div>
+                        <p>Qual a categoria do certificado?</p>
+                        <label>
+                            <input type="radio" name="categoria" value="1ª-categoria">
+                            <span>1ª</span>
+                        </label>
+                        <label>
+                            <input type="radio" name="categoria" value="2ª-categoria">
+                            <span>2ª</span>
+                        </label>
+                    </div>
+                    <div>
+                        <p>Selecione os artigos das taxa pagas pelo requerente:</p>
+                        <label>
+                            <input type="checkbox" name="artigo-reservista" value="art. 177/1" checked disabled>
+                            <span>Art. 177/1</span>
+                        </label>
+                        <label>
+                            <input id="art-176-3" type="checkbox" name="artigo-reservista" value="art. 176/3" disabled>
+                            <span>Art. 176/3</span>
+                        </label>
+                    </div>
+                    <div>
+                        <p>Informações da organização militar onde o requerente serviu:</p>
+                        <div class="grid grid-cols-2 gap-2">
+                            <label class="flex flex-col dados-reservista">
+                                <span>OM:</span>
+                                <input type="text" class="border rounded p-1">
+                            </label>
+                            <label class="flex flex-col dados-reservista">
+                                <span>Local:</span>
+                                <input type="text" class="border rounded p-1" placeholder="cidade - UF">
+                            </label>
+                            <label class="flex flex-col dados-reservista">
+                                <span>Subunidade:</span>
+                                <input type="text" class="border rounded p-1">
+                            </label>
+                            <label class="flex flex-col dados-reservista">
+                                <span>Data da incorporação:</span>
+                                <input type="date" class="border rounded p-1">
+                            </label>
+                            <label class="flex flex-col dados-reservista">
+                                <span>Data do licenciamento:</span>
+                                <input type="date" class="border rounded p-1">
+                            </label>
+                            <label class="flex flex-col dados-reservista">
+                                <span>Cargo:</span>
+                                <input type="text" class="border rounded p-1">
+                            </label>
+                            <label class="flex flex-col dados-reservista">
+                                <span>Município que foi residir ao ser licenciado:</span>
+                                <input type="text" class="border rounded p-1" placeholder="cidade - UF">
+                            </label>
+                            <label class="flex flex-col dados-reservista">
+                                <span>Local onde se apresentou pela última vez no EXAR:</span>
+                                <input type="text" class="border rounded p-1 sub-artigo" placeholder="cidade - UF">
+                            </label>
+                            <label>
+                                <span>Apresentações no EXAR:</span>
+                                <div class="flex flex-row gap-2 p-4 justify-center">
+                                    <label class="dados-reservista">
+                                        <input type="radio" name="apresentacoes-exar" value="1">
+                                        <span>1</span>
+                                    </label>
+                                    <label class="dados-reservista">
+                                        <input type="radio" name="apresentacoes-exar" value="2">
+                                        <span>2</span>
+                                    </label>
+                                    <label class="dados-reservista">
+                                        <input type="radio" name="apresentacoes-exar" value="3">
+                                        <span>3</span>
+                                    </label>
+                                    <label class="dados-reservista">
+                                        <input type="radio" name="apresentacoes-exar" value="4">
+                                        <span>4</span>
+                                    </label>
+                                    <label class="dados-reservista">
+                                        <input type="radio" name="apresentacoes-exar" value="5">
+                                        <span>5</span>
+                                    </label>
+                                </div>
+                            </label>
+                            <label class="flex flex-col dados-reservista">
+                                <span>Local onde comunicou pelu última vez mudança de residência:</span>
+                                <input type="text" class="border rounded p-1 sub-artigo" placeholder="cidade - UF">
+                            </label>
+                        </div>
                     </div>
                 </fieldset>
             </fieldset>

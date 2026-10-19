@@ -67,6 +67,8 @@ const divCarteira = document.querySelector("#carteira") || "";
 const labelSalario = document.querySelector("#salario") || "";
 let valorSiglaDoc = "";
 const crnm = document.querySelector("#crnm") || "";
+const art176 = document.querySelector("#art-176-3");
+const subArtigo = document.querySelectorAll(".sub-artigo");
 const dicionarioDocs = {
     "certidao-nascimento": "Cópia da certidão de nascimento",
     "certidao-casamento": "Cópia da certidão de casamento",
@@ -88,12 +90,16 @@ const dicionarioDocs = {
     "certificado-dispensa-incorporacao": "Certificado de Dispensa de Incorporação",
     "certificado-reservista": "Certificado de Reservista",
     "atestado-desobrigacao": "Atestado de Desobrigação",
+    "boletim-ocorrencia": "Cópia do boletim de ocorrência",
+    "informacoes-cadastrais": "Informações cadastrais",
+    "ficha-modelo-e": "Ficha modelo-E"
 };
 const listaArquivos = {
     "arrimo": ["../docs/requerimentos/arrimo/arrimo.txt", "../docs/requerimentos/arrimo/declaracao-arrimo.txt", "../docs/requerimentos/arrimo/declaracao-autonomo.txt"],
     "isencao-servico" : ["../docs/requerimentos/isencao-servico/isencao-servico.txt"],
     "isencao-txmt": ["../docs/requerimentos/isencao-txmt/isencao-txmt.txt", "../docs/requerimentos/isencao-txmt/ficha-socioeconomica.txt", "../docs/requerimentos/isencao-txmt/modelo-cidadao.txt"],
     "maior-30" : ["../docs/requerimentos/maior-30/maior-30.txt"],
+    "segunda-via-reservista": ["../docs/requerimentos/segunda-via-reservista/segunda-via-reservista.txt"],
     "retificacao-dados-cadastrais": ["../docs/requerimentos/retificacao/retificacao-dados-cadastrais.txt"],
 };
 
@@ -187,6 +193,19 @@ tipoNome.addEventListener("change", (event) => {
     });
 });
 
+art176.addEventListener("change", (event) => {
+    subArtigo.forEach(element => {
+        if(art176.checked){
+            element.value = "Marília - SP";
+            element.disabled = true;
+        }
+        else{
+            element.value = "";
+            element.disabled = false;
+        }
+    });
+});
+
 button.addEventListener("click", async (event) => {
     event.preventDefault();
     const form = document.querySelector("#form-docs") || "";
@@ -256,27 +275,42 @@ button.addEventListener("click", async (event) => {
     const listaQuemMudouNome = Array.from(quemMudouNome).map(quemMudou => quemMudou.value);
     const paresQuemMudou = listaQuemMudouNome.map((element, index) => [element, listaNovoNome[index]]);
     
+    //conteudo do requerimento de 2ª via do certificado de reservista
+    const categoria = document.querySelector(`input[name="categoria"]:checked`)?.value || "";
+    const dadosReservista = document.querySelectorAll(`.dados-reservista input:not([type="radio"]), .dados-reservista input[name="apresentacoes-exar"]:checked`) || "";
+    const vetorDadosReservista = [];
+    if(dadosReservista){
+        dadosReservista.forEach((element, index) => {
+            vetorDadosReservista.push(element.value);
+        });
+    }
+
+    const checkArtigoReservista = document.querySelectorAll(`input[name="artigo-reservista"]:checked`)?.value || "";
+
     function criarParagrafo(arrayFrases){
         const comprovanteResidencia = arrayFrases.splice(arrayFrases.indexOf(dicionarioDocs["comprovante-residencia"]), 1);
         arrayFrases.splice(arrayFrases.length, 0, comprovanteResidencia);
         comecoFrase = arrayFrases.slice(0, -1).join(", ");
         ultimoItem = arrayFrases.at(-1)
-        listaDocs = `${comecoFrase} e ${ultimoItem}`;
+        listaDocs = `${comecoFrase} e ${ultimoItem}.`;
     }
 
     switch (opcao) {
         case "vazio":
             alert("Por favor, selecione uma opção válida");
             break;
+
         case "arrimo":
             alert("Arrimo de Família");
             arrayDocs.splice(2, 0, "Declaração de arrimo");
             criarParagrafo(arrayDocs);
             break;
+
         case "isencao-servico":
             alert("Isenção do Serviço Militar");
             criarParagrafo(arrayDocs);
             break;
+
         case "isencao-txmt":
             alert("Isenção de Taxas e Multas");
             const fichaSocioeconomica = arrayDocs.splice(arrayDocs.indexOf(dicionarioDocs["ficha-socioeconomica"]), 1);
@@ -284,6 +318,7 @@ button.addEventListener("click", async (event) => {
             arrayDocs.splice(0, 0, fichaSocioeconomica);
             criarParagrafo(arrayDocs);
             break;
+
         case "maior-30":
             alert("Maior de 30 anos");
             if(nacionalidade == "estrangeiro"){
@@ -291,21 +326,39 @@ button.addEventListener("click", async (event) => {
             }
             criarParagrafo(arrayDocs);
             break;
+
         case "retificacao-dados-cadastrais":
             alert("Retificação de dados cadastrais");
             criarParagrafo(arrayDocs);
             break;
+
+        case "segunda-via-reservista":
+            alert("2ª via do certificado de reservista");
+            if(checkArtigoReservista.length < 2){
+                arrayDocs.splice(3, 0, `Cópia da guia de recolhimento referente à multa prevista no RLSM (art. 177/1)`);
+            }
+            else{
+                arrayDocs.splice(3, 0, `Cópia da guia de recolhimento referente à multa prevista no RLSM (art. 177/1 e art. 176/3)`);
+            }
+            const tipoInformacao = arrayDocs.splice(arrayDocs.length-1, 1);
+            arrayDocs.splice(arrayDocs.length, 0, tipoInformacao);
+            comecoFrase = arrayDocs.slice(0, -1).join(", ");
+            ultimoItem = arrayDocs.at(-1)
+            listaDocs = `${comecoFrase} e ${ultimoItem}.`;
+            alert(arrayDocs);
+            break;
     }
 
-    await lerArquivo(opcao, listaDocs, tipoArrimo, nomeArrimo, numeroDependentes, ocupacao.value, salario, salarioExtenso, casa, listaArtigos, valorTotal, valorExtensoArtigos, tipoDocumentoRetificacao, paresQuemMudou);
-    async function lerArquivo(opcao, listaDocs, tipoArrimo, nomeArrimo, numeroDependentes, ocupacao, salario, salarioExtenso, casa, listaArtigos, valorTotal, valorExtensoArtigos, tipoDocumentoRetificacao, paresQuemMudou) {
+    await lerArquivo(opcao, listaDocs, tipoArrimo, nomeArrimo, numeroDependentes, ocupacao.value, salario, salarioExtenso, casa, listaArtigos, valorTotal, valorExtensoArtigos, tipoDocumentoRetificacao, paresQuemMudou, categoria, vetorDadosReservista);
+
+    async function lerArquivo(opcao, listaDocs, tipoArrimo, nomeArrimo, numeroDependentes, ocupacao, salario, salarioExtenso, casa, listaArtigos, valorTotal, valorExtensoArtigos, tipoDocumentoRetificacao, paresQuemMudou, categoria, vetorDadosReservista) {
     alert(`Estamos dentro da funcao "lerAquivo" agora`);
         try {
             let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
             chrome.scripting.executeScript({
                 target: { tabId: tab.id },
-                args: [opcao, listaDocs, tipoArrimo, nomeArrimo, numeroDependentes, ocupacao, salario, salarioExtenso, casa, listaArtigos, valorTotal, valorExtensoArtigos, tipoDocumentoRetificacao, paresQuemMudou],
-                func: async (opcao, listaDocs, tipoArrimo, nomeArrimo, numeroDependentes, ocupacao, salario, salarioExtenso, casa, listaArtigos, valorTotal, valorExtensoArtigos, tipoDocumentoRetificacao, paresQuemMudou) => {
+                args: [opcao, listaDocs, tipoArrimo, nomeArrimo, numeroDependentes, ocupacao, salario, salarioExtenso, casa, listaArtigos, valorTotal, valorExtensoArtigos, tipoDocumentoRetificacao, paresQuemMudou, categoria, vetorDadosReservista],
+                func: async (opcao, listaDocs, tipoArrimo, nomeArrimo, numeroDependentes, ocupacao, salario, salarioExtenso, casa, listaArtigos, valorTotal, valorExtensoArtigos, tipoDocumentoRetificacao, paresQuemMudou, categoria, vetorDadosReservista) => {
                     const informacaoAlistamento = document.querySelectorAll(".list-group-item") || "";
                     const cidadeAlistamento = informacaoAlistamento[1].innerText;
                     const dataAlistamento = informacaoAlistamento[2].innerText;
@@ -333,10 +386,10 @@ button.addEventListener("click", async (event) => {
                         "Telefone": ""
                     };
                     
-                    Object.entries(linhaTabela).forEach(([key, value], index) => {
+                    Object.entries(dadosSermil).forEach(([key, value], index) => {
                         const chave = linhaTabela[index].cells[0]?.innerText?.trim() || "";
                         const valor = linhaTabela[index].cells[1]?.innerText?.trim() || "";
-                        if(valor){
+                        if(chave && valor && !dadosSermil[key]){
                             dadosSermil[chave] = valor;
                         }
                     });
@@ -399,7 +452,7 @@ button.addEventListener("click", async (event) => {
                     const localNascimento = linhaTabela[4]?.cells[1]?.innerText?.split(" - ") || "";
                     const cidadeN = localNascimento[0].charAt(0).toUpperCase() + localNascimento[0].slice(1).toLowerCase();
 
-                    const conectivos = ["da", "de", "do", "e"];
+                    const conectivos = ["da", "das", "de", "do", "dos", "e"];
                     function capitalizar(texto){
                         return texto.split(" ").map(palavra => {
                             if (conectivos.includes(palavra.toLowerCase())) {
@@ -461,6 +514,7 @@ button.addEventListener("click", async (event) => {
 
                     const cpfCidadao = dadosSermil["CPF"].replace(/(\d{3})(\d{3})(\d{3})(\d{1,2})/, "$1.$2.$3-$4");
                     const cepCidade = dadosSermil["CEP"].replace(/(\d{2})(\d{3})(\d{1,2})/, "$1.$2-$3");
+                    const telefone = dadosSermil["Telefone"].replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3")
 
                     const arrimo = (() => {
                         if(tipoArrimo == "mae"){
@@ -493,6 +547,37 @@ button.addEventListener("click", async (event) => {
                             });
                         return textoQuemMudouNome;
                     })();
+
+                    categoria = categoria.split("-").join(" ");
+
+                    const dataIncorporacao = vetorDadosReservista[3].split("-").toReversed().map(element => {
+                        return element;
+                    }).join("/");
+
+                    const dataLicenciamento = vetorDadosReservista[4].split("-").toReversed().map(element => {
+                        return element;
+                    }).join("/");
+
+                    let anoEXAR = (() => {
+                        if(vetorDadosReservista[4].split("-")[0]+"-12-01" <= vetorDadosReservista[4]){
+                            return parseInt(vetorDadosReservista[4].split("-")[0])+1;
+                        }
+                        else{
+                            return parseInt(vetorDadosReservista[4].split("-")[0]);
+                        }
+                    })();
+
+                    let liAnoEXAR = "";
+                    for(let cont=0; cont<vetorDadosReservista[8]; cont++){
+                        liAnoEXAR += `<li class="px-2">${anoEXAR+cont}</li>`
+                    }
+
+                    if(vetorDadosReservista[8] < 5){
+                        for(let cont=0; cont<5-vetorDadosReservista[8];cont++){
+                            liAnoEXAR += `<li class="px-2">        </li>`;
+                        }
+                    }
+                    //alert(liAnoEXAR);
 
                     const dicionario = {
                         "DATAATUAL": dataAtual,
@@ -528,6 +613,23 @@ button.addEventListener("click", async (event) => {
                         "ARTEXTENSO": valorExtensoArtigos,
                         "TIPODOCUMENTO": tipoDocumentoRetificacao,
                         "TIPOPESSOA" : tipoPessoa,
+                        "CATEGORIA": capitalizar(categoria),
+                        "TELEFONE": `telefone: ${telefone}`,
+                        "EMAIL": `email: ${dadosSermil["E-mail"]}`,
+                        "OM:": `<span class="border">OM:</span><span class="border">${vetorDadosReservista[0]}</span>`,
+                        "LOCAL:": `<span>Local:</span><span>${vetorDadosReservista[1]}</span>`,
+                        "SUBUNIDADE": `<span>Subunidade:</span><span>${vetorDadosReservista[2]}</span>`,
+                        "INCORPORACAO": `<span>Data da incorporação:</span><span>${dataIncorporacao}</span>`,
+                        "LICENCIAMENTO": `<span>Data do licenciamento:</span><span>${dataLicenciamento}</span>`,
+                        "CARGO": `<span>Cargo:</span><span>${vetorDadosReservista[5]}</span>`,
+                  /*40*/"CIDADELICENCIADO": `<span>Município que foi residir ao ser licenciado:</span><span>${vetorDadosReservista[6]}</span>`,
+                        "LOCALEXAR": `<span>Local onde se apresentou pela última vez no EXAR:</span><span>${vetorDadosReservista[7]}</span>`,
+                        "APRESENTACAOEXAR": `<span class="mx-auto">Apresentações no EXAR:</span>
+                                            <ul class="border divide-x divide-solid flex flex-row">
+                                                ${liAnoEXAR}
+                                            </ul>`,
+                        "RESIDENCIA": `<span>Local onde comunicou pela última vez mudança de residência:</span><span>${vetorDadosReservista[9]}</span>`,
+                        //"": `<span>:</span><span>${}</span>`,
                     };
 
                     return dicionario;
